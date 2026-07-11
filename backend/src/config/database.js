@@ -1,0 +1,22 @@
+import mongoose from 'mongoose';
+
+export async function connectDB() {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('MONGODB_URI is not set in backend/.env');
+  }
+
+  mongoose.set('strictQuery', true);
+
+  try {
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 10000,
+    });
+    console.log('MongoDB connected');
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'MongoDB connection failed';
+    throw new Error(
+      `MongoDB connection failed: ${message}. Check MONGODB_URI and Atlas IP whitelist.`
+    );
+  }
+}
