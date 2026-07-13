@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ShieldCheck,
@@ -18,7 +18,14 @@ import {
   Sparkles,
   Star,
   FileText,
+  ShoppingBag,
+  Package,
+  Loader2,
+  Quote,
 } from 'lucide-react';
+import { fetchProducts } from '@/lib/erp-api';
+import { formatPrice } from '@/lib/erp/products';
+import type { MarketplaceProduct } from '@/lib/erp/types';
 
 export default function LandingPage({
   onExplore,
@@ -30,7 +37,33 @@ export default function LandingPage({
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeStory, setActiveStory] = useState(0);
+  const [products, setProducts] = useState<MarketplaceProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
   const handleRequestQuote = onRequestQuote ?? (() => router.push('/marketplace'));
+
+  useEffect(() => {
+    let active = true;
+    fetchProducts()
+      .then((items) => {
+        if (active) setProducts(items.slice(0, 6));
+      })
+      .catch(() => {
+        if (active) setProducts([]);
+      })
+      .finally(() => {
+        if (active) setProductsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const goToProductQuote = (product: MarketplaceProduct) =>
+    router.push(
+      `/quote-request?productId=${encodeURIComponent(product.id)}&product=${encodeURIComponent(
+        product.name
+      )}&unitPrice=${product.unitPrice}`
+    );
 
   const stories = [
     {
@@ -102,7 +135,7 @@ export default function LandingPage({
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-mAseFfDMW3aKDSupzbbXpZO1faDURy.png"
+                src="/logo.png"
                 alt="Lockseed Supply"
                 className="h-10 w-auto"
               />
@@ -111,6 +144,9 @@ export default function LandingPage({
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-sm text-[#4C5A50] hover:text-[#1F4D3A] font-medium transition">
                 Platform
+              </a>
+              <a href="#shop" className="text-sm text-[#4C5A50] hover:text-[#1F4D3A] font-medium transition">
+                Shop Now
               </a>
               <a href="#benefits" className="text-sm text-[#4C5A50] hover:text-[#1F4D3A] font-medium transition">
                 Why Lockseed
@@ -157,6 +193,7 @@ export default function LandingPage({
         {mobileMenuOpen && (
           <div className="md:hidden bg-white/80 backdrop-blur-2xl border-t border-white/60 p-4 space-y-4">
             <a href="#features" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Platform</a>
+            <a href="#shop" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Shop Now</a>
             <a href="#benefits" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Why Lockseed</a>
             <a href="#suppliers" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Suppliers</a>
             <a href="#stories" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Customer stories</a>
@@ -302,6 +339,92 @@ export default function LandingPage({
         </div>
       </section>
 
+      {/* Shop Now — featured marketplace products */}
+      <section id="shop" className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14">
+            <div className="max-w-2xl">
+              <span className="text-sm font-semibold text-[#1F4D3A] flex items-center gap-1">
+                <ShoppingBag size={14} /> Shop Now
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
+                Featured products from verified suppliers
+              </h2>
+              <p className="text-lg text-[#4C5A50]">
+                Live picks from the marketplace, pulled straight from our vetted supplier
+                catalog. Add to a request or ask a supplier for pricing in one click.
+              </p>
+            </div>
+            <button
+              onClick={onExplore}
+              className="shrink-0 self-start sm:self-auto inline-flex items-center gap-2 bg-white/70 backdrop-blur border border-white/80 text-[#1F4D3A] font-semibold py-2.5 px-5 rounded-xl transition-all shadow-[4px_4px_12px_rgba(31,77,58,0.10),-4px_-4px_10px_rgba(255,255,255,0.9)] hover:shadow-[2px_2px_6px_rgba(31,77,58,0.12)_inset,-2px_-2px_6px_rgba(255,255,255,0.6)_inset]"
+            >
+              View all products <ArrowRight size={16} />
+            </button>
+          </div>
+
+          {productsLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 size={28} className="animate-spin text-[#1F4D3A]" />
+            </div>
+          ) : products.length === 0 ? (
+            <div className={`rounded-2xl p-12 text-center ${glassCard}`}>
+              <Package size={40} className="mx-auto text-[#8B9689] mb-4" />
+              <p className="text-[#4C5A50] font-medium">No products available right now.</p>
+              <button onClick={onExplore} className="mt-4 text-[#f36b14] font-semibold hover:underline">
+                Browse the marketplace
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className={`rounded-2xl overflow-hidden flex flex-col transition-all ${glassCard} ${glassCardHover}`}
+                >
+                  <div className="h-44 bg-gradient-to-br from-[#F1F3EC] to-[#E8EBE1] overflow-hidden relative">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect fill="%23E8EBE1" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="20" fill="%234C5A50"%3EProduct Image%3C/text%3E%3C/svg%3E';
+                      }}
+                    />
+                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-white/80 backdrop-blur text-[#1F4D3A] text-xs font-semibold px-2.5 py-1 rounded-full border border-white/80">
+                      <ShieldCheck size={12} /> Verified
+                    </span>
+                  </div>
+
+                  <div className="p-6 flex flex-col flex-1">
+                    <span className="inline-block bg-white/70 text-[#1F4D3A] text-xs font-semibold px-2.5 py-0.5 rounded-full border border-white/80 mb-2 self-start">
+                      {product.category}
+                    </span>
+                    <h3 className="text-base font-bold text-[#16231C] mb-1 leading-snug">{product.name}</h3>
+                    <p className="text-xs text-[#8B9689] mb-4 line-clamp-2">{product.description}</p>
+
+                    <div className="mt-auto flex items-end justify-between gap-3 pt-4 border-t border-white/60">
+                      <div>
+                        <p className="text-lg font-bold text-[#1F4D3A]">{formatPrice(product.unitPrice)}</p>
+                        <p className="text-xs text-[#8B9689]">starting price</p>
+                      </div>
+                      <button
+                        onClick={() => goToProductQuote(product)}
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-b from-[#fb8536] to-[#f36b14] py-2 px-4 rounded-lg transition-all shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_6px_14px_rgba(243,107,20,0.35)] hover:shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_8px_18px_rgba(243,107,20,0.45)] active:scale-[0.98]"
+                      >
+                        <FileText size={14} />
+                        Request Quote
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* AI-style spotlight feature */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -318,6 +441,16 @@ export default function LandingPage({
                 ranked by certification, price history, and delivery reliability, so your team
                 never starts from a blank search.
               </p>
+              <ul className="space-y-2.5 mb-6">
+                {['Certification-verified before they ever appear', 'Ranked by real price history, not list price', 'Scored on delivery reliability from past orders'].map(
+                  (item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-[#4C5A50]">
+                      <CheckCircle2 size={16} className="text-[#1F4D3A] mt-0.5 shrink-0" />
+                      {item}
+                    </li>
+                  )
+                )}
+              </ul>
               <a href="#" className="inline-flex items-center gap-1 text-[#1F4D3A] font-semibold hover:text-[#2E6650]">
                 See how it works <ArrowRight size={16} />
               </a>
@@ -364,16 +497,22 @@ export default function LandingPage({
                 icon: FileCheck,
                 title: 'Verified Documents',
                 desc: 'Every certification and compliance document is checked before a supplier goes live.',
+                stat: '12,000+',
+                statLabel: 'documents verified',
               },
               {
                 icon: MessageSquare,
                 title: 'Live Chat',
                 desc: 'Message suppliers directly on a request thread instead of losing context in email.',
+                stat: '3.2 hrs',
+                statLabel: 'avg. reply time',
               },
               {
                 icon: PackageCheck,
                 title: 'Order Tracking',
                 desc: 'Follow every order from confirmed quote to delivery, in one shared ledger.',
+                stat: '100%',
+                statLabel: 'orders tracked end-to-end',
               },
             ].map((f, i) => {
               const Icon = f.icon;
@@ -383,7 +522,11 @@ export default function LandingPage({
                     <Icon size={20} color="#FCFCF9" />
                   </div>
                   <h3 className="text-lg font-bold text-[#16231C] mb-1.5">{f.title}</h3>
-                  <p className="text-sm text-[#4C5A50]">{f.desc}</p>
+                  <p className="text-sm text-[#4C5A50] mb-4">{f.desc}</p>
+                  <div className="pt-3 border-t border-white/60">
+                    <p className="text-xl font-bold text-[#1F4D3A]">{f.stat}</p>
+                    <p className="text-xs text-[#8B9689]">{f.statLabel}</p>
+                  </div>
                 </div>
               );
             })}
@@ -402,15 +545,21 @@ export default function LandingPage({
           </div>
 
           <div className={`rounded-3xl p-8 md:p-12 ${glassCard}`}>
+            <Quote size={32} className="text-[#f36b14]/40 mb-4" />
             <p className="text-xl md:text-2xl text-[#16231C] leading-relaxed mb-8">
               &ldquo;{stories[activeStory].quote}&rdquo;
             </p>
             <div className="flex flex-wrap items-center justify-between gap-6">
-              <div>
-                <p className="font-semibold text-[#16231C]">{stories[activeStory].name}</p>
-                <p className="text-sm text-[#4C5A50]">
-                  {stories[activeStory].role}, {stories[activeStory].org}
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#1F4D3A] to-[#2E6650] flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                  {stories[activeStory].name.split(' ').map((n) => n[0]).join('')}
+                </div>
+                <div>
+                  <p className="font-semibold text-[#16231C]">{stories[activeStory].name}</p>
+                  <p className="text-sm text-[#4C5A50]">
+                    {stories[activeStory].role}, {stories[activeStory].org}
+                  </p>
+                </div>
               </div>
               <div className="text-right">
                 <p className="text-3xl font-bold text-[#1F4D3A]">{stories[activeStory].stat}</p>
@@ -450,23 +599,36 @@ export default function LandingPage({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             {[
-              { name: 'MedCare Global', country: 'Germany', category: 'Surgical Instruments' },
-              { name: 'SafeGuard PPE', country: 'USA', category: 'PPE & Protective' },
-              { name: 'PharmaTech India', country: 'India', category: 'Pharmaceuticals & APIs' },
-              { name: 'OxygenFlow Systems', country: 'Canada', category: 'Medical Oxygen' },
-              { name: 'DiagnoLab Solutions', country: 'UK', category: 'Diagnostics & Lab' },
-              { name: 'DentalCraft Pro', country: 'Italy', category: 'Dental Supplies' },
+              { name: 'MedCare Global', country: 'Germany', category: 'Surgical Instruments', rating: 4.8 },
+              { name: 'SafeGuard PPE', country: 'USA', category: 'PPE & Protective', rating: 4.7 },
+              { name: 'PharmaTech India', country: 'India', category: 'Pharmaceuticals & APIs', rating: 4.6 },
+              { name: 'OxygenFlow Systems', country: 'Canada', category: 'Medical Oxygen', rating: 4.9 },
+              { name: 'DiagnoLab Solutions', country: 'UK', category: 'Diagnostics & Lab', rating: 4.7 },
+              { name: 'DentalCraft Pro', country: 'Italy', category: 'Dental Supplies', rating: 4.5 },
             ].map((supplier, i) => (
-              <div key={i} className={`rounded-xl p-6 transition-all ${glassCard} ${glassCardHover}`}>
-                <div className="flex items-center gap-2 mb-2">
-                  <ShieldCheck size={18} color="#1F4D3A" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#1F4D3A]">Verified</span>
+              <div key={i} className={`rounded-xl p-6 flex flex-col transition-all ${glassCard} ${glassCardHover}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck size={18} color="#1F4D3A" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#1F4D3A]">Verified</span>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-[#4C5A50]">
+                    <Star size={12} className="text-[#f36b14]" fill="currentColor" />
+                    {supplier.rating}
+                  </div>
                 </div>
                 <h3 className="text-lg font-bold text-[#16231C]">{supplier.name}</h3>
                 <p className="text-sm text-[#4C5A50] mb-3">{supplier.country}</p>
-                <span className="inline-block bg-white/70 text-[#1F4D3A] text-xs font-semibold px-3 py-1 rounded-full border border-white/80">
+                <span className="inline-block bg-white/70 text-[#1F4D3A] text-xs font-semibold px-3 py-1 rounded-full border border-white/80 mb-4 self-start">
                   {supplier.category}
                 </span>
+                <button
+                  onClick={handleRequestQuote}
+                  className="mt-auto w-full inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-[#1F4D3A] bg-white/70 border border-white/80 py-2 rounded-lg transition-all shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] hover:shadow-[2px_2px_6px_rgba(31,77,58,0.12)_inset,-2px_-2px_6px_rgba(255,255,255,0.6)_inset]"
+                >
+                  <FileText size={14} />
+                  Request Quote
+                </button>
               </div>
             ))}
           </div>
@@ -493,19 +655,25 @@ export default function LandingPage({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[
-              { title: 'Sourcing Library', desc: 'Guides and checklists for medical procurement.' },
-              { title: 'RFQ Templates', desc: 'Ready-to-use templates for common categories.' },
-              { title: 'Community', desc: 'Connect with peers in healthcare procurement.' },
-              { title: 'Webinars', desc: 'Live and on-demand sessions with experts.' },
-            ].map((r, i) => (
-              <div key={i} className={`rounded-xl p-6 transition-all ${glassCard} ${glassCardHover}`}>
-                <h3 className="font-bold text-[#16231C] mb-1.5">{r.title}</h3>
-                <p className="text-sm text-[#4C5A50] mb-3">{r.desc}</p>
-                <a href="#" className="inline-flex items-center gap-1 text-sm font-semibold text-[#1F4D3A]">
-                  Explore <ArrowRight size={14} />
-                </a>
-              </div>
-            ))}
+              { title: 'Sourcing Library', desc: 'Guides and checklists for medical procurement.', icon: FileCheck },
+              { title: 'RFQ Templates', desc: 'Ready-to-use templates for common categories.', icon: FileText },
+              { title: 'Community', desc: 'Connect with peers in healthcare procurement.', icon: Users },
+              { title: 'Webinars', desc: 'Live and on-demand sessions with experts.', icon: MessageSquare },
+            ].map((r, i) => {
+              const Icon = r.icon;
+              return (
+                <div key={i} className={`rounded-xl p-6 transition-all ${glassCard} ${glassCardHover}`}>
+                  <div className="w-9 h-9 rounded-lg bg-white/70 shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] flex items-center justify-center mb-4">
+                    <Icon size={18} className="text-[#1F4D3A]" />
+                  </div>
+                  <h3 className="font-bold text-[#16231C] mb-1.5">{r.title}</h3>
+                  <p className="text-sm text-[#4C5A50] mb-3">{r.desc}</p>
+                  <a href="#" className="inline-flex items-center gap-1 text-sm font-semibold text-[#1F4D3A]">
+                    Explore <ArrowRight size={14} />
+                  </a>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -523,7 +691,7 @@ export default function LandingPage({
             </div>
             <span className="text-sm font-medium">4.8/5 from 1,200+ verified reviews</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#4ADE80]">
             Your suppliers are your business
           </h2>
           <p className="text-lg text-white/90 mb-8">
@@ -558,6 +726,7 @@ export default function LandingPage({
               <h4 className="font-semibold text-white mb-4 text-sm">Platform</h4>
               <ul className="space-y-2 text-sm">
                 <li><a href="#features" className="hover:text-white transition">Overview</a></li>
+                <li><a href="#shop" className="hover:text-white transition">Shop Now</a></li>
                 <li><a href="#benefits" className="hover:text-white transition">Everyday trust</a></li>
                 <li><a href="#suppliers" className="hover:text-white transition">Suppliers</a></li>
                 <li><a href="#" className="hover:text-white transition">Pricing</a></li>

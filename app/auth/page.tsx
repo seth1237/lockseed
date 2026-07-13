@@ -103,7 +103,7 @@ function AuthPageContent() {
           <div className="flex flex-col items-center justify-center flex-1">
             <div className="mb-8">
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-mAseFfDMW3aKDSupzbbXpZO1faDURy.png"
+                src="/logo.png"
                 alt="Lockseed Supply"
                 className="h-14 w-auto"
               />

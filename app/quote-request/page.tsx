@@ -189,7 +189,7 @@ function QuoteRequestContent() {
             <ArrowLeft size={20} />
           </button>
           <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-mAseFfDMW3aKDSupzbbXpZO1faDURy.png"
+              src="/logo.png"
             alt="Lockseed Supply"
             className="h-12 w-auto"
           />
