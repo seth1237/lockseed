@@ -40,14 +40,29 @@ export function generateRandomPassword(len = 10) {
   return out;
 }
 
+function cookieOptions() {
+  const isProd = process.env.NODE_ENV === 'production';
+  // Cross-site cookies (frontend and backend on different domains) require
+  // SameSite=None, which browsers only accept together with Secure (HTTPS).
+  // In local dev we fall back to Lax so cookies work over plain http://localhost.
+  return {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/',
+  };
+}
+
 export function setAuthCookies(res, accessToken, refreshToken) {
-  const secure = process.env.NODE_ENV === 'production';
-  const opts = { httpOnly: true, secure, sameSite: 'lax', path: '/' };
+  const opts = cookieOptions();
   res.cookie(ACCESS_COOKIE, accessToken, { ...opts, maxAge: 15 * 60 * 1000 });
   res.cookie(REFRESH_COOKIE, refreshToken, { ...opts, maxAge: 30 * 24 * 60 * 60 * 1000 });
 }
 
 export function clearAuthCookies(res) {
-  res.clearCookie(ACCESS_COOKIE, { path: '/' });
-  res.clearCookie(REFRESH_COOKIE, { path: '/' });
+  // Clear options must match the attributes used when setting the cookies,
+  // otherwise the browser won't remove them.
+  const { httpOnly, secure, sameSite, path } = cookieOptions();
+  res.clearCookie(ACCESS_COOKIE, { httpOnly, secure, sameSite, path });
+  res.clearCookie(REFRESH_COOKIE, { httpOnly, secure, sameSite, path });
 }
