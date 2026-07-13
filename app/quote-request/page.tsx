@@ -9,9 +9,9 @@ import { submitQuoteRequest } from '@/lib/erp-api';
 import { formatPrice } from '@/lib/erp/products';
 
 const inputBase =
-  'w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors';
-const inputNormal = 'border-[#D7DCCE] bg-[#F1F3EC] focus:bg-white focus:border-[#1F4D3A]';
-const inputError = 'border-[#A13B2E] bg-red-50';
+  'w-full px-4 py-3 border-2 rounded-lg focus:outline-none transition-colors text-[#16231C] placeholder:text-[#8B9689]';
+const inputNormal = 'border-[#8B9689] bg-white focus:bg-white focus:border-[#1F4D3A] focus:ring-2 focus:ring-[#f36b14]/30';
+const inputError = 'border-[#A13B2E] bg-red-50 text-[#16231C]';
 const inputReadOnly =
   'w-full px-4 py-3 border-2 border-[#D7DCCE] bg-[#EBEEE3] rounded-lg text-[#4C5A50] cursor-not-allowed';
 

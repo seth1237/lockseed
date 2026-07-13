@@ -471,7 +471,7 @@ export default function LockseedMarketplace() {
                       type="text"
                       value={form.clientName}
                       onChange={(e) => setForm({ ...form, clientName: e.target.value })}
-                      className="w-full px-4 py-2 border border-[#D7DCCE] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
+                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
                     />
                   </Field>
 
@@ -480,7 +480,7 @@ export default function LockseedMarketplace() {
                       type="email"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className="w-full px-4 py-2 border border-[#D7DCCE] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
+                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
                     />
                   </Field>
 
@@ -490,7 +490,7 @@ export default function LockseedMarketplace() {
                       value={form.clientNumber}
                       onChange={(e) => setForm({ ...form, clientNumber: e.target.value })}
                       placeholder="0712345678"
-                      className="w-full px-4 py-2 border border-[#D7DCCE] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
+                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
                     />
                   </Field>
 
@@ -500,7 +500,7 @@ export default function LockseedMarketplace() {
                       value={form.clientLocation}
                       onChange={(e) => setForm({ ...form, clientLocation: e.target.value })}
                       placeholder="City, Country"
-                      className="w-full px-4 py-2 border border-[#D7DCCE] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
+                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
                     />
                   </Field>
 
@@ -510,7 +510,7 @@ export default function LockseedMarketplace() {
                       min="1"
                       value={form.quantity}
                       onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-                      className="w-full px-4 py-2 border border-[#D7DCCE] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
+                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
                     />
                   </Field>
 
@@ -519,7 +519,7 @@ export default function LockseedMarketplace() {
                       value={form.notes}
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
                       rows={3}
-                      className="w-full px-4 py-2 border border-[#D7DCCE] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
+                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
                     />
                   </Field>
 
