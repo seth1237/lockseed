@@ -10,11 +10,32 @@ import { errorHandler } from './middlewares/error.middleware.js';
 
 const app = express();
 
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:3001';
+const allowedOrigins = [
+  'http://localhost:3001',
+  'https://lockseed.vercel.app',
+  'https://lockseed.codewithseth.co.ke',
+];
+
+// Allow any extra origin configured via CLIENT_URL (comma-separated supported).
+if (process.env.CLIENT_URL) {
+  for (const origin of process.env.CLIENT_URL.split(',')) {
+    const trimmed = origin.trim().replace(/\/+$/, '');
+    if (trimmed && !allowedOrigins.includes(trimmed)) {
+      allowedOrigins.push(trimmed);
+    }
+  }
+}
 
 app.use(
   cors({
-    origin: clientUrl,
+    origin(origin, callback) {
+      // Allow non-browser clients (curl, server-to-server) with no Origin header.
+      if (!origin || allowedOrigins.includes(origin.replace(/\/+$/, ''))) {
+        callback(null, true);
+      } else {
+        callback(new Error(`Origin ${origin} not allowed by CORS`));
+      }
+    },
     credentials: true,
   })
 );
