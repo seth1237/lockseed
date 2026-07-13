@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getErpBaseUrl, getErpHeaders, getErpOrgId } from './config';
 
-const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
+// Server-side (Next.js route handler) call to the Express backend — needs an
+// absolute origin, so it uses BACKEND_ORIGIN rather than the relative proxy prefix.
+const BACKEND_URL = (
+  process.env.BACKEND_ORIGIN ||
+  'https://lockseed.codewithseth.co.ke'
+).replace(/\/+$/, '');
 
 /**
  * Streams a PDF straight from the ERP to the browser, byte-for-byte.

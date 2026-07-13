@@ -10,6 +10,9 @@ import { errorHandler } from './middlewares/error.middleware.js';
 
 const app = express();
 
+// Behind nginx/TLS termination — trust the proxy so secure cookies and req.ip work.
+app.set('trust proxy', 1);
+
 const allowedOrigins = [
   'http://localhost:3001',
   'https://lockseed.vercel.app',
