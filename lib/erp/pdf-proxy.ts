@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getErpBaseUrl, getErpHeaders, getErpOrgId } from './config';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
 
 /**
  * Streams a PDF straight from the ERP to the browser, byte-for-byte.

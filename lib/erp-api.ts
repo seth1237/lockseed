@@ -1,6 +1,6 @@
 import type { ErpQuoteRequestPayload, MarketplaceProduct } from '@/lib/erp/types';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
 
 export async function fetchProducts(): Promise<MarketplaceProduct[]> {
   const response = await fetch(`${API_BASE}/api/erp/products`, { cache: 'no-store' });
