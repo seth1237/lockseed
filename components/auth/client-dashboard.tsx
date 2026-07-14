@@ -473,17 +473,21 @@ function QuoteDetailModal({
   const loadingKey = `${isInvoiceStage ? 'invoice' : 'quotation'}:${quote.quotationId}`;
   const isLoading = downloadLoadingKey === loadingKey;
 
-  const lineTotal =
-    quote.quantity && quote.unitPrice ? quote.quantity * quote.unitPrice : undefined;
+  const lineItems =
+    quote.items && quote.items.length > 0
+      ? quote.items
+      : quote.productName
+        ? [
+            {
+              productName: quote.productName,
+              quantity: quote.quantity,
+              unitPrice: quote.unitPrice,
+            },
+          ]
+        : [];
 
   const rows: { label: string; value: string }[] = [
     { label: 'Status', value: quote.status },
-    { label: 'Product', value: quote.productName || '—' },
-    ...(quote.quantity ? [{ label: 'Quantity', value: String(quote.quantity) }] : []),
-    ...(quote.unitPrice
-      ? [{ label: 'Unit Price', value: formatPrice(quote.unitPrice) }]
-      : []),
-    ...(lineTotal ? [{ label: 'Line Total', value: formatPrice(lineTotal) }] : []),
     ...(quote.clientLocation ? [{ label: 'Location', value: quote.clientLocation }] : []),
     { label: 'Submitted', value: new Date(quote.createdAt).toLocaleString() },
   ];
@@ -514,6 +518,28 @@ function QuoteDetailModal({
         </div>
 
         <div className="p-6">
+          {lineItems.length > 0 && (
+            <div className="mb-6">
+              <p className="text-sm font-semibold text-[#4C5A50] mb-3">Products</p>
+              <div className="space-y-2">
+                {lineItems.map((item, i) => (
+                  <div
+                    key={`${item.productName}-${i}`}
+                    className="flex justify-between gap-4 p-3 rounded-lg bg-[#F1F3EC] text-sm"
+                  >
+                    <div>
+                      <p className="font-bold text-[#16231C]">{item.productName || 'Product'}</p>
+                      {item.unitPrice != null && (
+                        <p className="text-[#4C5A50]">{formatPrice(item.unitPrice)} / unit</p>
+                      )}
+                    </div>
+                    <p className="font-bold text-[#16231C]">Qty {item.quantity ?? '—'}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <dl className="divide-y divide-[#D7DCCE]">
             {rows.map((row) => (
               <div key={row.label} className="flex justify-between gap-4 py-3">

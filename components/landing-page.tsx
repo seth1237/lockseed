@@ -1,31 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ShieldCheck,
   CheckCircle2,
   Zap,
   Globe,
-  Users,
-  TrendingUp,
   ArrowRight,
-  Menu,
-  X,
-  MessageSquare,
-  FileCheck,
-  PackageCheck,
   Sparkles,
-  Star,
-  FileText,
-  ShoppingBag,
-  Package,
-  Loader2,
   Quote,
+  PackageCheck,
+  FileCheck,
+  MessageSquare,
 } from 'lucide-react';
-import { fetchProducts } from '@/lib/erp-api';
-import { formatPrice } from '@/lib/erp/products';
-import type { MarketplaceProduct } from '@/lib/erp/types';
+import { SiteNav, SiteFooter, glassCard, glassCardHover } from '@/components/site-chrome';
+import {
+  manufacturers,
+  segments,
+  capabilities,
+  workflowSteps,
+  stories,
+} from '@/lib/site-content';
 
 export default function LandingPage({
   onExplore,
@@ -35,234 +31,63 @@ export default function LandingPage({
   onRequestQuote?: () => void;
 }) {
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeStory, setActiveStory] = useState(0);
-  const [products, setProducts] = useState<MarketplaceProduct[]>([]);
-  const [productsLoading, setProductsLoading] = useState(true);
-  const handleRequestQuote = onRequestQuote ?? (() => router.push('/marketplace'));
+  const handleRequestDemo = onRequestQuote ?? (() => router.push('/marketplace'));
 
-  useEffect(() => {
-    let active = true;
-    fetchProducts()
-      .then((items) => {
-        if (active) setProducts(items.slice(0, 6));
-      })
-      .catch(() => {
-        if (active) setProducts([]);
-      })
-      .finally(() => {
-        if (active) setProductsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const goToProductQuote = (product: MarketplaceProduct) =>
-    router.push(
-      `/quote-request?productId=${encodeURIComponent(product.id)}&product=${encodeURIComponent(
-        product.name
-      )}&unitPrice=${product.unitPrice}`
-    );
-
-  const stories = [
-    {
-      name: 'Amara Osei',
-      role: 'Procurement Lead',
-      org: 'Nairobi General Hospital',
-      quote:
-        'Lockseed cut our sourcing time in half. We used to chase suppliers by email for days — now quotes come back the same afternoon.',
-      stat: '48%',
-      statLabel: 'Faster time-to-quote',
-    },
-    {
-      name: 'Rahul Mehta',
-      role: 'Supply Chain Manager',
-      org: 'CrestCare Clinics',
-      quote:
-        'Every supplier on here is actually vetted. That single fact removed an entire layer of due diligence from our process.',
-      stat: '3x',
-      statLabel: 'More suppliers evaluated per RFQ',
-    },
-    {
-      name: 'Elena Vasquez',
-      role: 'Director of Operations',
-      org: 'Meridian Health Network',
-      quote:
-        'Our team files a request, tracks it in one place, and never loses a thread in someone\u2019s inbox anymore.',
-      stat: '100%',
-      statLabel: 'Requests tracked in one ledger',
-    },
-  ];
-
-  const partners = [
-    'MedCare Global',
-    'SafeGuard PPE',
-    'PharmaTech India',
-    'OxygenFlow Systems',
-    'DiagnoLab Solutions',
-    'DentalCraft Pro',
-  ];
-
-  // Shared glass / neumorphic tokens (kept as class strings so every card reads consistently)
-  const glassCard =
-    'bg-white/55 backdrop-blur-xl border border-white/70 shadow-[8px_8px_24px_rgba(31,77,58,0.10),-8px_-8px_20px_rgba(255,255,255,0.85)]';
-  const glassCardHover =
-    'hover:shadow-[10px_10px_28px_rgba(31,77,58,0.14),-10px_-10px_24px_rgba(255,255,255,0.9)] hover:-translate-y-0.5';
   const glassDark =
     'bg-white/10 backdrop-blur-xl border border-white/15 shadow-[6px_6px_20px_rgba(0,0,0,0.22),-4px_-4px_14px_rgba(255,255,255,0.05)_inset]';
 
   return (
     <div className="min-h-screen bg-[#FCFCF9] relative overflow-x-hidden">
-      {/* Ambient background blobs — the glass has something to catch light off */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
         <div className="absolute -top-32 -left-24 w-[420px] h-[420px] rounded-full bg-[#f36b14]/20 blur-[110px]" />
         <div className="absolute top-1/3 -right-32 w-[480px] h-[480px] rounded-full bg-[#1F4D3A]/20 blur-[120px]" />
         <div className="absolute bottom-0 left-1/4 w-[380px] h-[380px] rounded-full bg-[#F2C879]/20 blur-[100px]" />
       </div>
 
-      {/* Announcement bar */}
-      <div className="bg-[#16231C] text-white text-sm text-center py-2 px-4 relative z-40">
-        <span className="font-medium">New: instant quote matching is live</span>{' '}
-        <button onClick={onExplore} className="underline underline-offset-2 hover:text-[#f36b14] font-semibold transition">
-          Try it now
-        </button>
-      </div>
-
-      {/* Navigation */}
-      <nav className="sticky top-0 z-40 bg-white/60 backdrop-blur-2xl border-b border-white/50 shadow-[0_4px_24px_rgba(31,77,58,0.06)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <img
-                src="/logo.png"
-                alt="Lockseed Supply"
-                className="h-10 w-auto"
-              />
-            </div>
-
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-sm text-[#4C5A50] hover:text-[#1F4D3A] font-medium transition">
-                Platform
-              </a>
-              <a href="#shop" className="text-sm text-[#4C5A50] hover:text-[#1F4D3A] font-medium transition">
-                Shop Now
-              </a>
-              <a href="#benefits" className="text-sm text-[#4C5A50] hover:text-[#1F4D3A] font-medium transition">
-                Why Lockseed
-              </a>
-              <a href="#suppliers" className="text-sm text-[#4C5A50] hover:text-[#1F4D3A] font-medium transition">
-                Suppliers
-              </a>
-              <a href="#stories" className="text-sm text-[#4C5A50] hover:text-[#1F4D3A] font-medium transition">
-                Customer stories
-              </a>
-              <a href="#resources" className="text-sm text-[#4C5A50] hover:text-[#1F4D3A] font-medium transition">
-                Resources
-              </a>
-            </div>
-
-            <div className="hidden md:flex items-center gap-3">
-              <button
-                onClick={() => router.push('/auth')}
-                className="text-sm font-medium text-[#4C5A50] hover:text-[#1F4D3A] transition px-2"
-              >
-                Log in
-              </button>
-              <button
-                onClick={handleRequestQuote}
-                className="flex items-center gap-1.5 text-sm font-semibold text-[#1F4D3A] bg-white/70 backdrop-blur border border-white/80 py-2.5 px-4 rounded-xl transition-all shadow-[4px_4px_12px_rgba(31,77,58,0.10),-4px_-4px_10px_rgba(255,255,255,0.9)] hover:shadow-[2px_2px_6px_rgba(31,77,58,0.12)_inset,-2px_-2px_6px_rgba(255,255,255,0.6)_inset] active:scale-[0.98]"
-              >
-                <FileText size={15} />
-                Request a Quote
-              </button>
-              <button
-                onClick={onExplore}
-                className="bg-gradient-to-b from-[#fb8536] to-[#f36b14] text-white text-sm font-semibold py-2.5 px-5 rounded-xl transition-all shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_8px_18px_rgba(243,107,20,0.35)] hover:shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_10px_22px_rgba(243,107,20,0.45)] active:scale-[0.98]"
-              >
-                Start Shopping
-              </button>
-            </div>
-
-            <button className="md:hidden text-[#16231C]" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white/80 backdrop-blur-2xl border-t border-white/60 p-4 space-y-4">
-            <a href="#features" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Platform</a>
-            <a href="#shop" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Shop Now</a>
-            <a href="#benefits" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Why Lockseed</a>
-            <a href="#suppliers" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Suppliers</a>
-            <a href="#stories" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Customer stories</a>
-            <a href="#resources" className="block text-[#4C5A50] hover:text-[#1F4D3A] font-medium">Resources</a>
-            <button
-              onClick={handleRequestQuote}
-              className="w-full flex items-center justify-center gap-1.5 text-[#1F4D3A] bg-white/70 border border-white/80 font-semibold py-2.5 rounded-xl transition-all shadow-[4px_4px_12px_rgba(31,77,58,0.10),-4px_-4px_10px_rgba(255,255,255,0.9)]"
-            >
-              <FileText size={15} />
-              Request a Quote
-            </button>
-            <div className="flex gap-2">
-              <button
-                onClick={() => router.push('/auth')}
-                className="flex-1 border-2 border-[#1F4D3A] text-[#1F4D3A] hover:bg-[#F1F3EC] font-semibold py-2.5 rounded-lg transition-all"
-              >
-                Log in
-              </button>
-              <button
-                onClick={onExplore}
-                className="flex-1 bg-[#f36b14] hover:bg-orange-600 text-white font-semibold py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md"
-              >
-                Start Shopping
-              </button>
-            </div>
-          </div>
-        )}
-      </nav>
+      <SiteNav onExplore={onExplore} />
 
       {/* Hero */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 text-center">
         <h1 className="text-4xl md:text-6xl font-bold text-[#16231C] leading-[1.1] mb-6 tracking-tight">
-          Procurement + Trust:
+          Building Africa&rsquo;s
           <br />
-          Succeeding Together
+          Healthcare Procurement Infrastructure
         </h1>
         <p className="text-lg md:text-xl text-[#4C5A50] max-w-2xl mx-auto mb-8 leading-relaxed">
-          Join 500+ healthcare organizations sourcing from verified medical suppliers, filing
-          quotes, and tracking every order — all on one trusted platform.
+          We connect hospitals, clinics, laboratories, pharmacies, NGOs, and government health
+          institutions with verified manufacturers and distributors — digitizing procurement from
+          sourcing to delivery on one intelligent platform.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
           <button
             onClick={onExplore}
             className="bg-gradient-to-b from-[#fb8536] to-[#f36b14] text-white font-semibold py-3 px-7 rounded-xl transition-all shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_10px_24px_rgba(243,107,20,0.35)] hover:shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_12px_28px_rgba(243,107,20,0.45)] active:scale-[0.98]"
           >
-            Start Shopping
+            Explore the Platform
           </button>
+
           <button
-            onClick={handleRequestQuote}
-            className="bg-white/60 backdrop-blur border border-white/80 text-[#16231C] font-semibold py-3 px-7 rounded-xl transition-all shadow-[6px_6px_16px_rgba(31,77,58,0.10),-6px_-6px_14px_rgba(255,255,255,0.9)] hover:shadow-[3px_3px_10px_rgba(31,77,58,0.12)_inset,-3px_-3px_10px_rgba(255,255,255,0.7)_inset]"
+            onClick={() => router.push('/become-a-supplier')}
+            className="border-2 border-[#1F4D3A] text-[#1F4D3A] font-semibold py-3 px-7 rounded-xl transition-all hover:bg-[#1F4D3A] hover:text-white active:scale-[0.98]"
           >
-            Take a tour
+            Become a Supplier
           </button>
         </div>
 
-        {/* Trusted-by logo strip */}
         <p className="text-xs uppercase tracking-widest text-[#8B9689] mb-5">
-          Trusted by procurement teams at
+          Manufacturers and distributors on the network
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-70">
-          {partners.map((p) => (
-            <span key={p} className="text-sm font-semibold text-[#4C5A50]">
-              {p}
+          {manufacturers.map((m) => (
+            <span key={m} className="text-sm font-semibold text-[#4C5A50]">
+              {m}
             </span>
           ))}
         </div>
       </section>
 
-      {/* Product screenshot placeholder */}
+      {/* Infrastructure claim strip */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className={`rounded-3xl overflow-hidden ${glassCard}`}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/40">
@@ -270,68 +95,66 @@ export default function LandingPage({
               <div className="w-10 h-10 rounded-xl bg-white/70 shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] flex items-center justify-center mb-3">
                 <ShieldCheck size={20} className="text-[#1F4D3A]" />
               </div>
-              <h3 className="font-semibold text-[#16231C] mb-1">100% Verified Suppliers</h3>
-              <p className="text-sm text-[#4C5A50]">Every supplier is thoroughly vetted before listing.</p>
+              <h3 className="font-semibold text-[#16231C] mb-1">Verified Network</h3>
+              <p className="text-sm text-[#4C5A50]">
+                Every supplier is vetted for certification and compliance before listing.
+              </p>
             </div>
             <div className="bg-white/40 backdrop-blur-md p-6">
               <div className="w-10 h-10 rounded-xl bg-white/70 shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] flex items-center justify-center mb-3">
                 <Zap size={20} className="text-[#1F4D3A]" />
               </div>
-              <h3 className="font-semibold text-[#16231C] mb-1">Lightning-fast RFQs</h3>
-              <p className="text-sm text-[#4C5A50]">File a quote request in under 60 seconds.</p>
+              <h3 className="font-semibold text-[#16231C] mb-1">Digital Procurement</h3>
+              <p className="text-sm text-[#4C5A50]">
+                RFQs, approvals, and order tracking, without email threads or paper trails.
+              </p>
             </div>
             <div className="bg-white/40 backdrop-blur-md p-6">
               <div className="w-10 h-10 rounded-xl bg-white/70 shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] flex items-center justify-center mb-3">
                 <Globe size={20} className="text-[#1F4D3A]" />
               </div>
-              <h3 className="font-semibold text-[#16231C] mb-1">Global Reach</h3>
-              <p className="text-sm text-[#4C5A50]">Suppliers verified across 20+ countries.</p>
+              <h3 className="font-semibold text-[#16231C] mb-1">Cross-border Access</h3>
+              <p className="text-sm text-[#4C5A50]">
+                Healthcare providers reach manufacturers and distributors beyond their local
+                market.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Platform overview - feature grid */}
-      <section id="features" className="py-20 relative">
+      {/* Capabilities preview */}
+      <section className="py-20 relative">
         <div className="absolute inset-0 bg-[#F1F3EC]/70 backdrop-blur-sm -z-10" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mb-14">
-            <span className="text-sm font-semibold text-[#1F4D3A] flex items-center gap-1">
-              Platform overview <ArrowRight size={14} />
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
-              High-trust sourcing is built here
-            </h2>
-            <p className="text-lg text-[#4C5A50]">
-              Lockseed is where procurement teams go daily to discover suppliers, request
-              quotes, and keep every order moving.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14">
+            <div className="max-w-2xl">
+              <span className="text-sm font-semibold text-[#1F4D3A]">Platform capabilities</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
+                Everything healthcare procurement needs
+              </h2>
+              <p className="text-lg text-[#4C5A50]">
+                One platform for the full procurement lifecycle — an operating layer for how
+                healthcare organizations source, buy, and manage suppliers.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push('/platform')}
+              className="shrink-0 inline-flex items-center gap-2 text-[#1F4D3A] font-semibold hover:text-[#2E6650]"
+            >
+              View all capabilities <ArrowRight size={16} />
+            </button>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { num: '01', title: 'Discover', desc: 'Browse verified suppliers across 7 categories', icon: Globe },
-              { num: '02', title: 'Request', desc: 'File a quote request in less than a minute', icon: CheckCircle2 },
-              { num: '03', title: 'Track', desc: 'Monitor every request in your personal ledger', icon: TrendingUp },
-              { num: '04', title: 'Receive', desc: 'Compare quotes and manage orders seamlessly', icon: Users },
-            ].map((step, i) => {
-              const Icon = step.icon;
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {capabilities.slice(0, 6).map((c) => {
+              const Icon = c.icon;
               return (
-                <div
-                  key={i}
-                  className={`rounded-2xl p-7 transition-all group ${glassCard} ${glassCardHover}`}
-                >
-                  <div className="flex items-center justify-between mb-5">
-                    <span className="text-sm font-bold text-[#f36b14]">{step.num}</span>
-                    <div className="w-9 h-9 rounded-lg bg-white/70 shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] flex items-center justify-center">
-                      <Icon size={18} className="text-[#f36b14]" />
-                    </div>
+                <div key={c.title} className={`rounded-2xl p-6 transition-all ${glassCard} ${glassCardHover}`}>
+                  <div className="w-10 h-10 rounded-lg bg-white/70 shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] flex items-center justify-center mb-4">
+                    <Icon size={18} className="text-[#f36b14]" />
                   </div>
-                  <h3 className="text-lg font-bold text-[#16231C] mb-1.5">{step.title}</h3>
-                  <p className="text-sm text-[#4C5A50]">{step.desc}</p>
-                  <div className="flex items-center gap-1 text-sm font-semibold text-[#f36b14] mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Learn more <ArrowRight size={14} />
-                  </div>
+                  <h3 className="text-base font-bold text-[#16231C] mb-1.5">{c.title}</h3>
+                  <p className="text-sm text-[#4C5A50]">{c.desc}</p>
                 </div>
               );
             })}
@@ -339,136 +162,74 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* Shop Now — featured marketplace products */}
-      <section id="shop" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14">
-            <div className="max-w-2xl">
-              <span className="text-sm font-semibold text-[#1F4D3A] flex items-center gap-1">
-                <ShoppingBag size={14} /> Shop Now
-              </span>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
-                Featured products from verified suppliers
-              </h2>
-              <p className="text-lg text-[#4C5A50]">
-                Live picks from the marketplace, pulled straight from our vetted supplier
-                catalog. Add to a request or ask a supplier for pricing in one click.
-              </p>
-            </div>
-            <button
-              onClick={onExplore}
-              className="shrink-0 self-start sm:self-auto inline-flex items-center gap-2 bg-white/70 backdrop-blur border border-white/80 text-[#1F4D3A] font-semibold py-2.5 px-5 rounded-xl transition-all shadow-[4px_4px_12px_rgba(31,77,58,0.10),-4px_-4px_10px_rgba(255,255,255,0.9)] hover:shadow-[2px_2px_6px_rgba(31,77,58,0.12)_inset,-2px_-2px_6px_rgba(255,255,255,0.6)_inset]"
-            >
-              View all products <ArrowRight size={16} />
-            </button>
-          </div>
-
-          {productsLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 size={28} className="animate-spin text-[#1F4D3A]" />
-            </div>
-          ) : products.length === 0 ? (
-            <div className={`rounded-2xl p-12 text-center ${glassCard}`}>
-              <Package size={40} className="mx-auto text-[#8B9689] mb-4" />
-              <p className="text-[#4C5A50] font-medium">No products available right now.</p>
-              <button onClick={onExplore} className="mt-4 text-[#f36b14] font-semibold hover:underline">
-                Browse the marketplace
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className={`rounded-2xl overflow-hidden flex flex-col transition-all ${glassCard} ${glassCardHover}`}
-                >
-                  <div className="h-44 bg-gradient-to-br from-[#F1F3EC] to-[#E8EBE1] overflow-hidden relative">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src =
-                          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"%3E%3Crect fill="%23E8EBE1" width="400" height="300"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="20" fill="%234C5A50"%3EProduct Image%3C/text%3E%3C/svg%3E';
-                      }}
-                    />
-                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 bg-white/80 backdrop-blur text-[#1F4D3A] text-xs font-semibold px-2.5 py-1 rounded-full border border-white/80">
-                      <ShieldCheck size={12} /> Verified
-                    </span>
-                  </div>
-
-                  <div className="p-6 flex flex-col flex-1">
-                    <span className="inline-block bg-white/70 text-[#1F4D3A] text-xs font-semibold px-2.5 py-0.5 rounded-full border border-white/80 mb-2 self-start">
-                      {product.category}
-                    </span>
-                    <h3 className="text-base font-bold text-[#16231C] mb-1 leading-snug">{product.name}</h3>
-                    <p className="text-xs text-[#8B9689] mb-4 line-clamp-2">{product.description}</p>
-
-                    <div className="mt-auto flex items-end justify-between gap-3 pt-4 border-t border-white/60">
-                      <div>
-                        <p className="text-lg font-bold text-[#1F4D3A]">{formatPrice(product.unitPrice)}</p>
-                        <p className="text-xs text-[#8B9689]">starting price</p>
-                      </div>
-                      <button
-                        onClick={() => goToProductQuote(product)}
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-gradient-to-b from-[#fb8536] to-[#f36b14] py-2 px-4 rounded-lg transition-all shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_6px_14px_rgba(243,107,20,0.35)] hover:shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_8px_18px_rgba(243,107,20,0.45)] active:scale-[0.98]"
-                      >
-                        <FileText size={14} />
-                        Request Quote
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* AI-style spotlight feature */}
+      {/* Smart Matching */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
               <span className="text-sm font-semibold text-[#1F4D3A] flex items-center gap-1">
-                <Sparkles size={14} /> Smart Matching
+                <Sparkles size={14} /> Smart Supplier Matching
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
-                Unblock sourcing with your personal matching engine
+                Every RFQ is routed by data, not by who a buyer already knows
               </h2>
               <p className="text-lg text-[#4C5A50] mb-6">
                 Smart Matching surfaces the right suppliers for every request automatically —
-                ranked by certification, price history, and delivery reliability, so your team
-                never starts from a blank search.
+                ranked by certification, price history, and delivery reliability.
               </p>
-              <ul className="space-y-2.5 mb-6">
-                {['Certification-verified before they ever appear', 'Ranked by real price history, not list price', 'Scored on delivery reliability from past orders'].map(
-                  (item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-[#4C5A50]">
-                      <CheckCircle2 size={16} className="text-[#1F4D3A] mt-0.5 shrink-0" />
-                      {item}
-                    </li>
-                  )
-                )}
-              </ul>
-              <a href="#" className="inline-flex items-center gap-1 text-[#1F4D3A] font-semibold hover:text-[#2E6650]">
-                See how it works <ArrowRight size={16} />
-              </a>
+              <button
+                onClick={() => router.push('/how-it-works')}
+                className="inline-flex items-center gap-1 text-[#1F4D3A] font-semibold hover:text-[#2E6650]"
+              >
+                See how the platform works <ArrowRight size={16} />
+              </button>
             </div>
-            <div className={`relative rounded-3xl p-10 text-white bg-gradient-to-br from-[#1F4D3A] to-[#2E6650] overflow-hidden ${glassDark}`}>
+            <div
+              className={`relative rounded-3xl p-10 text-white bg-gradient-to-br from-[#1F4D3A] to-[#2E6650] overflow-hidden ${glassDark}`}
+            >
               <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[#f36b14]/20 blur-3xl" />
-              <div className="space-y-6 relative">
-                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 shadow-[3px_3px_10px_rgba(0,0,0,0.2)_inset]">
-                  <p className="text-sm text-white/70 mb-1">Matched suppliers</p>
-                  <p className="text-3xl font-bold">6 found</p>
+              <div className="space-y-4 relative">
+                <div className="bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/10">
+                  <p className="text-sm text-white/70 mb-3">Matching in progress</p>
+                  <svg viewBox="0 0 300 150" className="w-full h-36" fill="none">
+                    {/* connecting lines */}
+                    <line x1="34" y1="75" x2="262" y2="30" stroke="white" strokeOpacity="0.18" strokeWidth="2" />
+                    <line x1="34" y1="75" x2="262" y2="75" stroke="white" strokeOpacity="0.18" strokeWidth="2" />
+                    <line x1="34" y1="75" x2="262" y2="120" stroke="white" strokeOpacity="0.18" strokeWidth="2" />
+
+                    {/* traveling pulse along the matched line */}
+                    <circle r="4" fill="#4ADE80">
+                      <animateMotion dur="1.8s" repeatCount="indefinite" path="M34,75 L262,75" />
+                    </circle>
+                    <circle r="4" fill="#4ADE80" opacity="0.5">
+                      <animateMotion dur="1.8s" begin="0.6s" repeatCount="indefinite" path="M34,75 L262,75" />
+                    </circle>
+
+                    {/* RFQ node */}
+                    <circle cx="34" cy="75" r="18" fill="white" fillOpacity="0.12" stroke="white" strokeOpacity="0.4" strokeWidth="1.5" />
+                    <text x="34" y="79" textAnchor="middle" fontSize="10" fontWeight="700" fill="white">
+                      RFQ
+                    </text>
+
+                    {/* supplier nodes */}
+                    <circle cx="262" cy="30" r="13" fill="white" fillOpacity="0.1" stroke="white" strokeOpacity="0.3" />
+                    <circle cx="262" cy="120" r="13" fill="white" fillOpacity="0.1" stroke="white" strokeOpacity="0.3" />
+
+                    <circle cx="262" cy="75" r="13" fill="#4ADE80" fillOpacity="0.9">
+                      <animate attributeName="r" values="13;15;13" dur="1.8s" repeatCount="indefinite" />
+                    </circle>
+                    <circle cx="262" cy="75" r="13" fill="none" stroke="#4ADE80" strokeWidth="2">
+                      <animate attributeName="r" values="13;24" dur="1.8s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" values="0.6;0" dur="1.8s" repeatCount="indefinite" />
+                    </circle>
+                  </svg>
                 </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 shadow-[3px_3px_10px_rgba(0,0,0,0.2)_inset]">
-                  <p className="text-sm text-white/70 mb-1">Avg. response time</p>
-                  <p className="text-3xl font-bold">3.2 hrs</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 shadow-[3px_3px_10px_rgba(0,0,0,0.2)_inset]">
-                  <p className="text-sm text-white/70 mb-1">Match confidence</p>
-                  <p className="text-3xl font-bold">94%</p>
+                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-white/70 mb-1">Best match found</p>
+                    <p className="text-xl font-bold">Supplier verified &amp; ranked #1</p>
+                  </div>
+                  <span className="w-3 h-3 rounded-full bg-[#4ADE80] animate-pulse shrink-0" />
                 </div>
               </div>
             </div>
@@ -476,72 +237,39 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* Habits-style triple feature */}
-      <section id="benefits" className="py-20 relative">
+      {/* Trust + story preview */}
+      <section className="py-20 relative">
         <div className="absolute inset-0 bg-[#F1F3EC]/70 backdrop-blur-sm -z-10" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mb-14">
-            <span className="text-sm font-semibold text-[#1F4D3A]">Everyday trust</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
-              Build reliable procurement through everyday habits
-            </h2>
-            <p className="text-lg text-[#4C5A50]">
-              Turn daily moments — a quote request, a document check, a status update — into a
-              supply chain your team can count on.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-14">
             {[
               {
                 icon: FileCheck,
-                title: 'Verified Documents',
-                desc: 'Every certification and compliance document is checked before a supplier goes live.',
-                stat: '12,000+',
-                statLabel: 'documents verified',
+                title: 'Verified Documentation',
+                desc: 'Certifications checked before a supplier goes live.',
               },
               {
                 icon: MessageSquare,
-                title: 'Live Chat',
-                desc: 'Message suppliers directly on a request thread instead of losing context in email.',
-                stat: '3.2 hrs',
-                statLabel: 'avg. reply time',
+                title: 'Direct Communication',
+                desc: 'Request threads keep context in one place.',
               },
               {
                 icon: PackageCheck,
                 title: 'Order Tracking',
-                desc: 'Follow every order from confirmed quote to delivery, in one shared ledger.',
-                stat: '100%',
-                statLabel: 'orders tracked end-to-end',
+                desc: 'Follow every order from quote to delivery.',
               },
-            ].map((f, i) => {
+            ].map((f) => {
               const Icon = f.icon;
               return (
-                <div key={i} className={`rounded-2xl p-7 transition-all ${glassCard} ${glassCardHover}`}>
-                  <div className="w-11 h-11 bg-gradient-to-br from-[#1F4D3A] to-[#2E6650] rounded-lg flex items-center justify-center mb-5 shadow-[3px_3px_10px_rgba(31,77,58,0.3)]">
+                <div key={f.title} className={`rounded-2xl p-7 ${glassCard}`}>
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#1F4D3A] to-[#2E6650] rounded-lg flex items-center justify-center mb-5">
                     <Icon size={20} color="#FCFCF9" />
                   </div>
                   <h3 className="text-lg font-bold text-[#16231C] mb-1.5">{f.title}</h3>
-                  <p className="text-sm text-[#4C5A50] mb-4">{f.desc}</p>
-                  <div className="pt-3 border-t border-white/60">
-                    <p className="text-xl font-bold text-[#1F4D3A]">{f.stat}</p>
-                    <p className="text-xs text-[#8B9689]">{f.statLabel}</p>
-                  </div>
+                  <p className="text-sm text-[#4C5A50]">{f.desc}</p>
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* Customer stories carousel */}
-      <section id="stories" className="py-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <span className="text-sm font-semibold text-[#1F4D3A]">Customer stories</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3">
-              Trusted by top procurement teams
-            </h2>
           </div>
 
           <div className={`rounded-3xl p-8 md:p-12 ${glassCard}`}>
@@ -550,24 +278,20 @@ export default function LandingPage({
               &ldquo;{stories[activeStory].quote}&rdquo;
             </p>
             <div className="flex flex-wrap items-center justify-between gap-6">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#1F4D3A] to-[#2E6650] flex items-center justify-center text-white font-semibold text-sm shrink-0">
-                  {stories[activeStory].name.split(' ').map((n) => n[0]).join('')}
-                </div>
-                <div>
-                  <p className="font-semibold text-[#16231C]">{stories[activeStory].name}</p>
-                  <p className="text-sm text-[#4C5A50]">
-                    {stories[activeStory].role}, {stories[activeStory].org}
-                  </p>
-                </div>
+              <div>
+                <p className="font-semibold text-[#16231C]">{stories[activeStory].name}</p>
+                <p className="text-sm text-[#4C5A50]">
+                  {stories[activeStory].role}, {stories[activeStory].org}
+                </p>
               </div>
-              <div className="text-right">
-                <p className="text-3xl font-bold text-[#1F4D3A]">{stories[activeStory].stat}</p>
-                <p className="text-sm text-[#4C5A50]">{stories[activeStory].statLabel}</p>
-              </div>
+              <button
+                onClick={() => router.push('/stories')}
+                className="text-sm font-semibold text-[#1F4D3A] inline-flex items-center gap-1"
+              >
+                More stories <ArrowRight size={14} />
+              </button>
             </div>
           </div>
-
           <div className="flex justify-center gap-2 mt-6">
             {stories.map((_, i) => (
               <button
@@ -583,187 +307,36 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* Suppliers grid */}
-      <section id="suppliers" className="py-20 relative">
-        <div className="absolute inset-0 bg-[#F1F3EC]/70 backdrop-blur-sm -z-10" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="text-sm font-semibold text-[#1F4D3A]">Marketplace</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
-              Our verified suppliers
-            </h2>
-            <p className="text-lg text-[#4C5A50] max-w-2xl mx-auto">
-              Trusted partners from around the world, all vetted and rated.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            {[
-              { name: 'MedCare Global', country: 'Germany', category: 'Surgical Instruments', rating: 4.8 },
-              { name: 'SafeGuard PPE', country: 'USA', category: 'PPE & Protective', rating: 4.7 },
-              { name: 'PharmaTech India', country: 'India', category: 'Pharmaceuticals & APIs', rating: 4.6 },
-              { name: 'OxygenFlow Systems', country: 'Canada', category: 'Medical Oxygen', rating: 4.9 },
-              { name: 'DiagnoLab Solutions', country: 'UK', category: 'Diagnostics & Lab', rating: 4.7 },
-              { name: 'DentalCraft Pro', country: 'Italy', category: 'Dental Supplies', rating: 4.5 },
-            ].map((supplier, i) => (
-              <div key={i} className={`rounded-xl p-6 flex flex-col transition-all ${glassCard} ${glassCardHover}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck size={18} color="#1F4D3A" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-[#1F4D3A]">Verified</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-[#4C5A50]">
-                    <Star size={12} className="text-[#f36b14]" fill="currentColor" />
-                    {supplier.rating}
-                  </div>
-                </div>
-                <h3 className="text-lg font-bold text-[#16231C]">{supplier.name}</h3>
-                <p className="text-sm text-[#4C5A50] mb-3">{supplier.country}</p>
-                <span className="inline-block bg-white/70 text-[#1F4D3A] text-xs font-semibold px-3 py-1 rounded-full border border-white/80 mb-4 self-start">
-                  {supplier.category}
-                </span>
-                <button
-                  onClick={handleRequestQuote}
-                  className="mt-auto w-full inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-[#1F4D3A] bg-white/70 border border-white/80 py-2 rounded-lg transition-all shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] hover:shadow-[2px_2px_6px_rgba(31,77,58,0.12)_inset,-2px_-2px_6px_rgba(255,255,255,0.6)_inset]"
-                >
-                  <FileText size={14} />
-                  Request Quote
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center">
-            <button
-              onClick={onExplore}
-              className="bg-gradient-to-b from-[#fb8536] to-[#f36b14] text-white font-semibold py-3 px-8 rounded-xl transition-all inline-flex items-center gap-2 shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_10px_24px_rgba(243,107,20,0.35)] hover:shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_12px_28px_rgba(243,107,20,0.45)]"
-            >
-              Explore all suppliers <ArrowRight size={20} />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Resources */}
-      <section id="resources" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <span className="text-sm font-semibold text-[#1F4D3A]">Resources</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3">
-              Power your procurement team
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[
-              { title: 'Sourcing Library', desc: 'Guides and checklists for medical procurement.', icon: FileCheck },
-              { title: 'RFQ Templates', desc: 'Ready-to-use templates for common categories.', icon: FileText },
-              { title: 'Community', desc: 'Connect with peers in healthcare procurement.', icon: Users },
-              { title: 'Webinars', desc: 'Live and on-demand sessions with experts.', icon: MessageSquare },
-            ].map((r, i) => {
-              const Icon = r.icon;
-              return (
-                <div key={i} className={`rounded-xl p-6 transition-all ${glassCard} ${glassCardHover}`}>
-                  <div className="w-9 h-9 rounded-lg bg-white/70 shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] flex items-center justify-center mb-4">
-                    <Icon size={18} className="text-[#1F4D3A]" />
-                  </div>
-                  <h3 className="font-bold text-[#16231C] mb-1.5">{r.title}</h3>
-                  <p className="text-sm text-[#4C5A50] mb-3">{r.desc}</p>
-                  <a href="#" className="inline-flex items-center gap-1 text-sm font-semibold text-[#1F4D3A]">
-                    Explore <ArrowRight size={14} />
-                  </a>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA with rating badge */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1F4D3A] to-[#2E6650] -z-10" />
-        <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-[#f36b14]/20 blur-[100px] -z-10" />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/15 rounded-full px-4 py-2 mb-6">
-            <div className="flex text-[#F2C879]">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} size={14} fill="currentColor" />
-              ))}
-            </div>
-            <span className="text-sm font-medium">4.8/5 from 1,200+ verified reviews</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#4ADE80]">
-            Your suppliers are your business
+      {/* Supplier CTA */}
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mb-4">
+            Join the verified supplier network
           </h2>
-          <p className="text-lg text-white/90 mb-8">
-            Make sure both are successful with Lockseed.
+          <p className="text-lg text-[#4C5A50] mb-8">
+            Manufacturers and distributors can apply to sell through Lockseed. Tell us what you
+            supply — our team reviews each application.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              onClick={handleRequestQuote}
-              className="bg-white text-[#1F4D3A] hover:bg-[#F1F3EC] font-semibold py-3 px-8 rounded-xl transition-all shadow-[0_10px_24px_rgba(0,0,0,0.2)]"
+              onClick={() => router.push('/become-a-supplier')}
+              className="bg-gradient-to-b from-[#fb8536] to-[#f36b14] text-white font-semibold py-3 px-8 rounded-xl inline-flex items-center justify-center gap-2"
             >
-              Request a demo
+              Become a Supplier <ArrowRight size={18} />
             </button>
-            <button className="bg-white/10 backdrop-blur border border-white/30 hover:border-white/60 text-white font-semibold py-3 px-8 rounded-xl transition-all">
-              Take a free tour
+            <button
+              onClick={() => router.push('/suppliers')}
+              className="border-2 border-[#1F4D3A] text-[#1F4D3A] font-semibold py-3 px-8 rounded-xl"
+            >
+              View supplier network
             </button>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#16231C] text-white/70 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <ShieldCheck size={22} color="#FCFCF9" />
-                <span className="font-bold text-white">Lockseed</span>
-              </div>
-              <p className="text-sm">Verified medical supplier marketplace.</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Platform</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#features" className="hover:text-white transition">Overview</a></li>
-                <li><a href="#shop" className="hover:text-white transition">Shop Now</a></li>
-                <li><a href="#benefits" className="hover:text-white transition">Everyday trust</a></li>
-                <li><a href="#suppliers" className="hover:text-white transition">Suppliers</a></li>
-                <li><a href="#" className="hover:text-white transition">Pricing</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition">About</a></li>
-                <li><a href="#" className="hover:text-white transition">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition">Newsroom</a></li>
-                <li><a href="#" className="hover:text-white transition">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Resources</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#resources" className="hover:text-white transition">Library</a></li>
-                <li><a href="#" className="hover:text-white transition">Templates</a></li>
-                <li><a href="#" className="hover:text-white transition">Community</a></li>
-                <li><a href="#" className="hover:text-white transition">Events</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4 text-sm">Legal</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition">Privacy</a></li>
-                <li><a href="#" className="hover:text-white transition">Terms</a></li>
-                <li><a href="#" className="hover:text-white transition">Security</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-white/10 pt-8 text-center text-sm">
-            <p>&copy; 2026 Lockseed Supplies. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      {/* Final CTA */}
+
+      <SiteFooter />
     </div>
   );
 }

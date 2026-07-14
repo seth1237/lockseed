@@ -14,6 +14,14 @@ const QuoteRequestSchema = new mongoose.Schema(
     productName: String,
     quantity: Number,
     unitPrice: Number,
+    items: [
+      {
+        productId: String,
+        productName: String,
+        quantity: Number,
+        unitPrice: Number,
+      },
+    ],
     clientLocation: String,
     notes: String,
   },

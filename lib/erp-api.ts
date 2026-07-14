@@ -14,14 +14,24 @@ export async function fetchProducts(): Promise<MarketplaceProduct[]> {
 }
 
 export async function submitQuoteRequest(
-  body: Omit<ErpQuoteRequestPayload, 'orgId'> & { productName?: string; notes?: string }
+  body: Omit<ErpQuoteRequestPayload, 'orgId'> & {
+    productName?: string;
+    notes?: string;
+    company?: string;
+    password?: string;
+    items: {
+      productId: string;
+      quantity: number;
+      unitPrice: number;
+      productName?: string;
+    }[];
+  }
 ): Promise<{ quotationId: string; isNewUser?: boolean }> {
-  const { productName, ...quoteBody } = body;
   const response = await fetch(`${API_BASE}/api/quotes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ ...quoteBody, productName }),
+    body: JSON.stringify(body),
   });
 
   const payload = await response.json();

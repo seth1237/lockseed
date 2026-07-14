@@ -63,6 +63,8 @@ export async function submitQuote(req, res, body) {
     name: body.clientName,
     phone: body.clientNumber,
     location: body.clientLocation,
+    company: body.company,
+    password: body.password,
   });
 
   const quotationId = await createQuoteRequest({
@@ -70,18 +72,36 @@ export async function submitQuote(req, res, body) {
     clientNumber: body.clientNumber,
     clientLocation: body.clientLocation,
     email: body.email,
-    items: body.items,
+    items: body.items.map((i) => ({
+      productId: i.productId,
+      quantity: i.quantity,
+      unitPrice: i.unitPrice,
+    })),
   });
 
-  const item = body.items[0];
+  const lineItems = body.items.map((i) => ({
+    productId: i.productId,
+    productName: i.productName || body.productName || 'Product',
+    quantity: i.quantity,
+    unitPrice: i.unitPrice,
+  }));
+  const first = lineItems[0];
+  const productName =
+    body.productName ||
+    (lineItems.length === 1
+      ? first.productName
+      : `${first.productName} +${lineItems.length - 1} more`);
+  const totalQty = lineItems.reduce((sum, i) => sum + Number(i.quantity || 0), 0);
+
   const quote = await QuoteRequest.create({
     userId: user._id,
     quotationId,
     status: 'pending',
-    productId: item?.productId,
-    productName: body.productName,
-    quantity: item?.quantity,
-    unitPrice: item?.unitPrice,
+    productId: first?.productId,
+    productName,
+    quantity: totalQty,
+    unitPrice: first?.unitPrice,
+    items: lineItems,
     clientLocation: body.clientLocation,
     notes: body.notes,
   });
@@ -127,6 +147,7 @@ export async function getDashboard(userId) {
       productName: q.productName,
       quantity: q.quantity,
       unitPrice: q.unitPrice,
+      items: q.items || [],
       clientLocation: q.clientLocation,
       createdAt: q.createdAt,
     })),

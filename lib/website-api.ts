@@ -22,6 +22,7 @@ export interface WebsiteQuote {
   productName?: string;
   quantity?: number;
   unitPrice?: number;
+  items?: { productId?: string; productName?: string; quantity?: number; unitPrice?: number }[];
   clientLocation?: string;
   notes?: string;
   createdAt: string;
@@ -125,5 +126,25 @@ export async function resetPassword(token: string, password: string) {
   return api<{ success: boolean }>('/api/auth/reset-password', {
     method: 'POST',
     body: JSON.stringify({ token, password }),
+  });
+}
+
+export async function submitSupplierApplication(body: {
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  country?: string;
+  city?: string;
+  website?: string;
+  supplierType: 'manufacturer' | 'distributor' | 'both' | 'other';
+  categories: string[];
+  products: { name: string; category?: string; description?: string }[];
+  documentsReady: string[];
+  message?: string;
+}) {
+  return api<{ success: boolean; id: string; message: string }>('/api/suppliers/apply', {
+    method: 'POST',
+    body: JSON.stringify(body),
   });
 }

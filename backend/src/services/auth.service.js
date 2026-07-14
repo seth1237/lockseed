@@ -133,25 +133,48 @@ export async function getCurrentUser(req, res) {
 export async function findOrCreateForQuote(input) {
   let user = await User.findOne({ email: input.email.toLowerCase() });
   if (user) {
-    if (input.location && !user.address) {
-      user.address = input.location;
+    // Returning applicant submitting while logged out — verify password if provided.
+    if (input.password) {
+      const ok = await bcrypt.compare(input.password, user.passwordHash);
+      if (!ok) {
+        const err = new Error('An account with this email already exists. Check your password or log in.');
+        err.status = 401;
+        throw err;
+      }
+    }
+    const updates = {};
+    if (input.location && !user.address) updates.address = input.location;
+    if (input.phone && !user.phone) updates.phone = input.phone;
+    if (input.company && !user.company) updates.company = input.company;
+    if (Object.keys(updates).length) {
+      Object.assign(user, updates);
       await user.save();
     }
     return { user, isNewUser: false };
   }
 
-  const password = generateRandomPassword();
+  const password = input.password?.trim() || generateRandomPassword();
+  if (input.password && input.password.length < 6) {
+    const err = new Error('Password must be at least 6 characters');
+    err.status = 400;
+    throw err;
+  }
+
   user = await User.create({
     email: input.email.toLowerCase(),
     name: input.name,
-    company: input.name,
+    company: input.company || input.name,
     phone: input.phone,
     address: input.location,
     passwordHash: await bcrypt.hash(password, ROUNDS),
     status: 'active',
   });
 
-  await sendWelcomeEmail({ to: user.email, name: user.name, temporaryPassword: password });
+  // Only email a temporary password when we generated one (legacy quick-quote path).
+  if (!input.password) {
+    await sendWelcomeEmail({ to: user.email, name: user.name, temporaryPassword: password });
+  }
+
   await Notification.create({
     userId: user._id,
     title: 'Welcome to Lockseed',

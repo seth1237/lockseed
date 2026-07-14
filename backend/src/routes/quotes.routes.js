@@ -12,10 +12,13 @@ const quoteSchema = z.object({
   clientNumber: z.string().min(5),
   clientLocation: z.string().min(2),
   email: z.string().email(),
+  company: z.string().optional(),
+  password: z.string().min(6).optional(),
   items: z
     .array(
       z.object({
         productId: z.string().min(1),
+        productName: z.string().optional(),
         quantity: z.number().positive(),
         unitPrice: z.number().nonnegative(),
       })
@@ -41,6 +44,7 @@ router.get(
         productName: q.productName,
         quantity: q.quantity,
         unitPrice: q.unitPrice,
+        items: q.items || [],
         clientLocation: q.clientLocation,
         createdAt: q.createdAt,
       })),

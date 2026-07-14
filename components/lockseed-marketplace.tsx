@@ -6,39 +6,22 @@ import {
   Search,
   ShieldCheck,
   Package,
-  X,
-  ArrowRight,
-  CheckCircle2,
-  Truck,
-  LogOut,
   ArrowLeft,
   AlertCircle,
   RefreshCw,
+  LogOut,
+  ShoppingCart,
+  Check,
 } from 'lucide-react';
 import { getMe } from '@/lib/website-api';
 import type { WebsiteUser } from '@/lib/website-api';
-import { fetchProducts, submitQuoteRequest } from '@/lib/erp-api';
+import { fetchProducts } from '@/lib/erp-api';
 import type { MarketplaceProduct } from '@/lib/erp/types';
 import { formatPrice } from '@/lib/erp/products';
-
-type QuoteForm = {
-  clientName: string;
-  email: string;
-  clientNumber: string;
-  clientLocation: string;
-  quantity: string;
-  notes: string;
-};
-
-type LocalRfq = {
-  ref: string;
-  quotationId: string;
-  product: string;
-  qty: string;
-  email: string;
-  date: string;
-  status: 'Pending';
-};
+import {
+  addToQuoteCart,
+  getQuoteCartCount,
+} from '@/lib/quote-cart';
 
 function VerifiedSeal({ size = 'md' }: { size?: 'sm' | 'md' }) {
   const sz = size === 'sm' ? 40 : 60;
@@ -51,12 +34,26 @@ function VerifiedSeal({ size = 'md' }: { size?: 'sm' | 'md' }) {
 
 function ProductCard({
   product,
-  onQuickQuote,
+  onAdded,
+  onRequestQuote,
 }: {
   product: MarketplaceProduct;
-  onQuickQuote: () => void;
+  onAdded: () => void;
+  onRequestQuote: () => void;
 }) {
-  const router = useRouter();
+  const [justAdded, setJustAdded] = useState(false);
+
+  const handleAdd = () => {
+    addToQuoteCart({
+      productId: product.id,
+      productName: product.name,
+      unitPrice: product.unitPrice,
+      quantity: 1,
+    });
+    setJustAdded(true);
+    onAdded();
+    setTimeout(() => setJustAdded(false), 1200);
+  };
 
   return (
     <div className="bg-white border border-[#D7DCCE] rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full">
@@ -105,32 +102,27 @@ function ProductCard({
 
         <div className="space-y-3">
           <button
-            onClick={() =>
-              router.push(
-                `/quote-request?productId=${encodeURIComponent(product.id)}&product=${encodeURIComponent(product.name)}&unitPrice=${product.unitPrice}`
-              )
-            }
+            onClick={onRequestQuote}
             className="w-full bg-[#f36b14] hover:bg-orange-600 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors shadow-sm hover:shadow-md"
           >
             Request Quote
           </button>
           <button
-            onClick={onQuickQuote}
-            className="w-full border-2 border-[#2E6650] text-[#2E6650] hover:bg-[#F1F3EC] font-semibold py-2 px-4 rounded-lg transition-colors"
+            onClick={handleAdd}
+            className="w-full border-2 border-[#2E6650] text-[#2E6650] hover:bg-[#F1F3EC] font-semibold py-2 px-4 rounded-lg transition-colors inline-flex items-center justify-center gap-2"
           >
-            Quick Quote
+            {justAdded ? (
+              <>
+                <Check size={16} /> Added
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={16} /> Add to quote
+              </>
+            )}
           </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-5">
-      <label className="block text-sm font-semibold text-[#16231C] mb-2">{label}</label>
-      {children}
     </div>
   );
 }
@@ -142,20 +134,10 @@ export default function LockseedMarketplace() {
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [productsError, setProductsError] = useState('');
-  const [panelProduct, setPanelProduct] = useState<MarketplaceProduct | null>(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [lastQuotation, setLastQuotation] = useState<LocalRfq | null>(null);
   const [session, setSession] = useState<WebsiteUser | null>(null);
-  const [form, setForm] = useState<QuoteForm>({
-    clientName: '',
-    email: '',
-    clientNumber: '',
-    clientLocation: '',
-    quantity: '',
-    notes: '',
-  });
+  const [cartCount, setCartCount] = useState(0);
+
+  const refreshCart = () => setCartCount(getQuoteCartCount());
 
   const loadProducts = async () => {
     setLoadingProducts(true);
@@ -175,13 +157,6 @@ export default function LockseedMarketplace() {
       try {
         const { user } = await getMe();
         setSession(user);
-        setForm((prev) => ({
-          ...prev,
-          clientName: user.company || user.name,
-          email: user.email,
-          clientNumber: user.phone || prev.clientNumber,
-          clientLocation: user.address || prev.clientLocation,
-        }));
       } catch {
         setSession(null);
       }
@@ -189,6 +164,15 @@ export default function LockseedMarketplace() {
 
     loadProducts();
     loadSession();
+    refreshCart();
+
+    const onCart = () => refreshCart();
+    window.addEventListener('lockseed-quote-cart', onCart);
+    window.addEventListener('storage', onCart);
+    return () => {
+      window.removeEventListener('lockseed-quote-cart', onCart);
+      window.removeEventListener('storage', onCart);
+    };
   }, []);
 
   const categories = useMemo(() => {
@@ -206,85 +190,16 @@ export default function LockseedMarketplace() {
     return matchCat && matchQuery;
   });
 
-  const openQuickQuote = (product: MarketplaceProduct) => {
-    setPanelProduct(product);
-    setSubmitted(false);
-    setSubmitError('');
-    if (session) {
-      setForm((prev) => ({
-        ...prev,
-        clientName: session.company || session.name,
-        email: session.email,
-        clientNumber: session.phone || prev.clientNumber,
-        clientLocation: session.address || prev.clientLocation,
-        quantity: '',
-        notes: '',
-      }));
-    }
+  const startQuote = (product: MarketplaceProduct) => {
+    addToQuoteCart({
+      productId: product.id,
+      productName: product.name,
+      unitPrice: product.unitPrice,
+      quantity: 1,
+    });
+    refreshCart();
+    router.push('/quote-request');
   };
-
-  const handleSubmit = async () => {
-    if (!panelProduct || !form.clientName || !form.email || !form.clientNumber || !form.clientLocation || !form.quantity) {
-      return;
-    }
-
-    setSubmitting(true);
-    setSubmitError('');
-
-    try {
-      const quantity = Number(form.quantity);
-      if (!quantity || quantity <= 0) {
-        throw new Error('Enter a valid quantity');
-      }
-
-      const { quotationId } = await submitQuoteRequest({
-        clientName: form.clientName,
-        clientNumber: form.clientNumber,
-        clientLocation: form.clientLocation,
-        email: form.email,
-        items: [
-          {
-            productId: panelProduct.id,
-            quantity,
-            unitPrice: panelProduct.unitPrice,
-          },
-        ],
-        productName: panelProduct.name,
-        notes: form.notes,
-      });
-      const today = new Date().toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-
-      const rfq: LocalRfq = {
-        ref: quotationId,
-        quotationId,
-        product: panelProduct.name,
-        qty: form.quantity,
-        email: form.email,
-        date: today,
-        status: 'Pending',
-      };
-
-      try {
-        const { user } = await getMe();
-        setSession(user);
-      } catch {
-        // auto-login cookies set by backend on new quote
-      }
-      setLastQuotation(rfq);
-      setSubmitted(true);
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Failed to submit quote');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const isFormValid =
-    form.clientName && form.email && form.clientNumber && form.clientLocation && form.quantity;
 
   return (
     <div className="min-h-screen bg-[#FCFCF9]">
@@ -297,43 +212,54 @@ export default function LockseedMarketplace() {
             >
               <ArrowLeft size={20} />
             </button>
-            <img
-                src="/logo.png"
-              alt="Lockseed Supply"
-              className="h-12 w-auto"
-            />
+            <img src="/logo.png" alt="Lockseed Supply" className="h-12 w-auto" />
           </div>
           <div className="text-center flex-1">
             <p className="text-xs uppercase tracking-widest text-[#4C5A50] font-semibold">
               {loadingProducts ? 'Loading catalog...' : `${products.length} ERP Products`}
             </p>
           </div>
-          {session ? (
-            <div className="flex items-center gap-4">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs text-[#4C5A50]">Logged in as</p>
-                <p className="text-sm font-semibold text-[#16231C]">{session.company || session.name}</p>
-              </div>
-              <button
-                onClick={async () => {
-                const { logout } = await import('@/lib/website-api');
-                await logout();
-                window.location.href = '/';
-              }}
-                className="flex items-center gap-2 px-3 py-2 border-2 border-[#A13B2E] text-[#A13B2E] hover:bg-red-50 font-semibold rounded-lg transition-all"
-              >
-                <LogOut size={16} />
-                Logout
-              </button>
-            </div>
-          ) : (
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => router.push('/auth?redirect=/marketplace')}
-              className="text-sm font-semibold text-[#1F4D3A] hover:text-[#f36b14] transition-colors"
+              onClick={() => router.push('/quote-request')}
+              className="relative inline-flex items-center gap-2 px-3 py-2 border-2 border-[#1F4D3A] text-[#1F4D3A] font-semibold rounded-lg hover:bg-[#F1F3EC]"
             >
-              Log in
+              <ShoppingCart size={16} />
+              <span className="hidden sm:inline">Quote</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-[1.25rem] h-5 px-1 rounded-full bg-[#f36b14] text-white text-xs font-bold flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
             </button>
-          )}
+            {session ? (
+              <>
+                <div className="text-right hidden md:block">
+                  <p className="text-xs text-[#4C5A50]">Logged in as</p>
+                  <p className="text-sm font-semibold text-[#16231C]">
+                    {session.company || session.name}
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    const { logout } = await import('@/lib/website-api');
+                    await logout();
+                    window.location.href = '/';
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 border-2 border-[#A13B2E] text-[#A13B2E] hover:bg-red-50 font-semibold rounded-lg"
+                >
+                  <LogOut size={16} />
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => router.push('/auth?redirect=/marketplace')}
+                className="text-sm font-semibold text-[#1F4D3A] hover:text-[#f36b14]"
+              >
+                Log in
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -344,13 +270,10 @@ export default function LockseedMarketplace() {
             <div className="flex-1">
               <p className="text-red-800 font-semibold text-sm">Could not load ERP catalog</p>
               <p className="text-red-700 text-sm mt-1">{productsError}</p>
-              <p className="text-red-600 text-xs mt-2">
-                Check ERP_ORG_ID and ERP_API_BASE_URL in your environment.
-              </p>
             </div>
             <button
               onClick={loadProducts}
-              className="flex items-center gap-1 text-sm font-semibold text-[#1F4D3A] hover:text-[#f36b14]"
+              className="flex items-center gap-1 text-sm font-semibold text-[#1F4D3A]"
             >
               <RefreshCw size={14} />
               Retry
@@ -360,25 +283,24 @@ export default function LockseedMarketplace() {
 
         <div className="mb-8">
           <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4C5A50]" size={20} />
+            <Search size={18} className="absolute left-4 top-3.5 text-[#4C5A50]" />
             <input
               type="text"
-              placeholder="Search products by name, category, or description..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-[#D7DCCE] rounded-lg bg-white text-[#16231C] placeholder-[#4C5A50] focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
+              placeholder="Search products..."
+              className="w-full pl-12 pr-4 py-3 border-2 border-[#8B9689] rounded-lg bg-white text-[#16231C] placeholder:text-[#8B9689] focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
             />
           </div>
-
           <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCat(cat)}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                   activeCat === cat
-                    ? 'bg-[#f36b14] text-white shadow-md'
-                    : 'bg-[#E8EBE1] text-[#16231C] hover:bg-[#D7DCCE]'
+                    ? 'bg-[#1F4D3A] text-white'
+                    : 'bg-white text-[#4C5A50] border border-[#D7DCCE] hover:border-[#1F4D3A]'
                 }`}
               >
                 {cat}
@@ -388,157 +310,38 @@ export default function LockseedMarketplace() {
         </div>
 
         {loadingProducts ? (
-          <div className="flex items-center justify-center py-24">
-            <div className="text-center">
-              <div className="w-12 h-12 border-4 border-[#D7DCCE] border-t-[#f36b14] rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-[#4C5A50]">Loading products from ERP...</p>
-            </div>
+          <div className="text-center py-20">
+            <div className="w-12 h-12 border-4 border-[#D7DCCE] border-t-[#f36b14] rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-[#4C5A50]">Loading products...</p>
           </div>
-        ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onQuickQuote={() => openQuickQuote(product)}
-              />
-            ))}
-          </div>
-        ) : (
+        ) : filteredProducts.length === 0 ? (
           <div className="bg-white rounded-lg p-12 text-center border border-[#D7DCCE]">
             <Package size={48} className="mx-auto mb-4 text-[#D7DCCE]" />
             <p className="text-[#4C5A50] font-medium">No products found matching your search.</p>
           </div>
-        )}
-
-        {lastQuotation && (
-          <div className="mt-12">
-            <h2 className="text-xl font-bold text-[#16231C] mb-4 flex items-center gap-2">
-              <Truck size={24} color="#1F4D3A" />
-              Latest Quotation
-            </h2>
-            <div className="bg-white rounded-lg border border-[#D7DCCE] p-6">
-              <p className="font-semibold text-[#1F4D3A]">{lastQuotation.product}</p>
-              <p className="text-sm text-[#4C5A50] mt-1">
-                {lastQuotation.product} · Qty {lastQuotation.qty} · {lastQuotation.date}
-              </p>
-            </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAdded={refreshCart}
+                onRequestQuote={() => startQuote(product)}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      {panelProduct && (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setPanelProduct(null)} />
-          <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-2xl overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-[#D7DCCE] p-6 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-[#16231C]">
-                {submitted ? 'Quotation Submitted' : `Quote: ${panelProduct.name}`}
-              </h3>
-              <button onClick={() => setPanelProduct(null)} className="text-[#4C5A50] hover:text-[#16231C]">
-                <X size={24} />
-              </button>
-            </div>
-
-            <div className="p-6">
-              {submitted && lastQuotation ? (
-                <div className="space-y-6">
-                  <div className="bg-[#16231C] rounded-lg p-8 text-white text-center">
-                    <CheckCircle2 size={48} className="mx-auto mb-4 text-[#2E6650]" />
-                    <p className="text-xs uppercase tracking-widest text-[#2E6650] mb-2 font-semibold">
-                      ERP Quotation Created
-                    </p>
-                    <h2 className="text-2xl font-bold mb-2">{lastQuotation.product}</h2>
-                    <p className="text-sm text-gray-300">Your request was sent to Lockseed Supplies ERP</p>
-                  </div>
-                  <button
-                    onClick={() => setPanelProduct(null)}
-                    className="w-full bg-[#f36b14] hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg"
-                  >
-                    Done
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {submitError && (
-                    <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-                      {submitError}
-                    </div>
-                  )}
-
-                  <Field label="Organization / Name *">
-                    <input
-                      type="text"
-                      value={form.clientName}
-                      onChange={(e) => setForm({ ...form, clientName: e.target.value })}
-                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
-                    />
-                  </Field>
-
-                  <Field label="Email *">
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
-                    />
-                  </Field>
-
-                  <Field label="Phone Number *">
-                    <input
-                      type="tel"
-                      value={form.clientNumber}
-                      onChange={(e) => setForm({ ...form, clientNumber: e.target.value })}
-                      placeholder="0712345678"
-                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
-                    />
-                  </Field>
-
-                  <Field label="Delivery Location *">
-                    <input
-                      type="text"
-                      value={form.clientLocation}
-                      onChange={(e) => setForm({ ...form, clientLocation: e.target.value })}
-                      placeholder="City, Country"
-                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
-                    />
-                  </Field>
-
-                  <Field label={`Quantity * (${formatPrice(panelProduct.unitPrice)} each)`}>
-                    <input
-                      type="number"
-                      min="1"
-                      value={form.quantity}
-                      onChange={(e) => setForm({ ...form, quantity: e.target.value })}
-                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
-                    />
-                  </Field>
-
-                  <Field label="Additional Notes">
-                    <textarea
-                      value={form.notes}
-                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                      rows={3}
-                      className="w-full px-4 py-2 border-2 border-[#8B9689] bg-white text-[#16231C] placeholder:text-[#8B9689] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1F4D3A] focus:border-[#1F4D3A]"
-                    />
-                  </Field>
-
-                  <button
-                    onClick={handleSubmit}
-                    disabled={!isFormValid || submitting}
-                    className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-                      isFormValid && !submitting
-                        ? 'bg-[#f36b14] hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
-                        : 'bg-[#E8EBE1] text-[#4C5A50] cursor-not-allowed'
-                    }`}
-                  >
-                    {submitting ? 'Submitting to ERP...' : 'Submit Quote Request'}
-                    <ArrowRight size={18} />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+      {cartCount > 0 && (
+        <div className="fixed bottom-6 right-6 z-40">
+          <button
+            onClick={() => router.push('/quote-request')}
+            className="bg-[#f36b14] hover:bg-orange-600 text-white font-semibold py-3 px-5 rounded-full shadow-lg inline-flex items-center gap-2"
+          >
+            <ShoppingCart size={18} />
+            Review quote ({cartCount})
+          </button>
         </div>
       )}
     </div>
