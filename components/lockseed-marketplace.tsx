@@ -13,7 +13,7 @@ import {
   ShoppingCart,
   Check,
 } from 'lucide-react';
-import { getMe } from '@/lib/website-api';
+import { getMe, recordProductClick } from '@/lib/website-api';
 import type { WebsiteUser } from '@/lib/website-api';
 import { fetchProducts } from '@/lib/erp-api';
 import type { MarketplaceProduct } from '@/lib/erp/types';
@@ -44,6 +44,13 @@ function ProductCard({
   const [justAdded, setJustAdded] = useState(false);
 
   const handleAdd = () => {
+    void recordProductClick({
+      productId: product.id,
+      productName: product.name,
+      image: product.image,
+      unitPrice: product.unitPrice,
+      category: product.category,
+    });
     addToQuoteCart({
       productId: product.id,
       productName: product.name,
@@ -191,6 +198,13 @@ export default function LockseedMarketplace() {
   });
 
   const startQuote = (product: MarketplaceProduct) => {
+    void recordProductClick({
+      productId: product.id,
+      productName: product.name,
+      image: product.image,
+      unitPrice: product.unitPrice,
+      category: product.category,
+    });
     addToQuoteCart({
       productId: product.id,
       productName: product.name,
@@ -216,7 +230,7 @@ export default function LockseedMarketplace() {
           </div>
           <div className="text-center flex-1">
             <p className="text-xs uppercase tracking-widest text-[#4C5A50] font-semibold">
-              {loadingProducts ? 'Loading catalog...' : `${products.length} ERP Products`}
+              {loadingProducts ? 'Loading catalog...' : `${products.length} Products`}
             </p>
           </div>
           <div className="flex items-center gap-3">

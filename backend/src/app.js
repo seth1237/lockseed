@@ -7,6 +7,7 @@ import quotesRoutes from './routes/quotes.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import erpRoutes from './routes/erp.routes.js';
 import suppliersRoutes from './routes/suppliers.routes.js';
+import analyticsRoutes from './routes/analytics.routes.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 
 const app = express();
@@ -56,6 +57,7 @@ app.use('/api/quotes', quotesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/erp', erpRoutes);
 app.use('/api/suppliers', suppliersRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.use(errorHandler);
 

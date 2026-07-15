@@ -148,3 +148,36 @@ export async function submitSupplierApplication(body: {
     body: JSON.stringify(body),
   });
 }
+
+export type TopProduct = {
+  id: string;
+  name: string;
+  image: string;
+  unitPrice: number;
+  category: string;
+  clicks: number;
+};
+
+export async function recordProductClick(input: {
+  productId: string;
+  productName: string;
+  image?: string;
+  unitPrice?: number;
+  category?: string;
+}) {
+  return api<{ success: boolean; clicks: number }>('/api/analytics/product-click', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  }).catch(() => ({ success: false, clicks: 0 }));
+}
+
+export async function fetchTopProducts(limit = 6): Promise<TopProduct[]> {
+  try {
+    const payload = await api<{ products: TopProduct[] }>(
+      `/api/analytics/top-products?limit=${limit}`
+    );
+    return payload.products || [];
+  } catch {
+    return [];
+  }
+}

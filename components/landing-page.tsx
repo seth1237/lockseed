@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ShieldCheck,
-  CheckCircle2,
   Zap,
   Globe,
   ArrowRight,
@@ -13,15 +12,25 @@ import {
   PackageCheck,
   FileCheck,
   MessageSquare,
+  CheckCircle2,
+  Package,
 } from 'lucide-react';
 import { SiteNav, SiteFooter, glassCard, glassCardHover } from '@/components/site-chrome';
 import {
   manufacturers,
-  segments,
   capabilities,
-  workflowSteps,
   stories,
+  servicePillars,
+  platformValueProps,
+  brandLogoUrl,
 } from '@/lib/site-content';
+import {
+  fetchTopProducts,
+  recordProductClick,
+  type TopProduct,
+} from '@/lib/website-api';
+import { fetchProducts } from '@/lib/erp-api';
+import { formatPrice } from '@/lib/erp/products';
 
 export default function LandingPage({
   onExplore,
@@ -32,10 +41,52 @@ export default function LandingPage({
 }) {
   const router = useRouter();
   const [activeStory, setActiveStory] = useState(0);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+  const [topLoading, setTopLoading] = useState(true);
   const handleRequestDemo = onRequestQuote ?? (() => router.push('/marketplace'));
 
   const glassDark =
     'bg-white/10 backdrop-blur-xl border border-white/15 shadow-[6px_6px_20px_rgba(0,0,0,0.22),-4px_-4px_14px_rgba(255,255,255,0.05)_inset]';
+
+  useEffect(() => {
+    let active = true;
+    async function loadTop() {
+      setTopLoading(true);
+      try {
+        let top = await fetchTopProducts(6);
+        // Fallback: if no click data yet, seed from live catalog so the section is never empty.
+        if (top.length === 0) {
+          const catalog = await fetchProducts().catch(() => []);
+          top = catalog.slice(0, 6).map((p) => ({
+            id: p.id,
+            name: p.name,
+            image: p.image,
+            unitPrice: p.unitPrice,
+            category: p.category,
+            clicks: 0,
+          }));
+        }
+        if (active) setTopProducts(top);
+      } finally {
+        if (active) setTopLoading(false);
+      }
+    }
+    loadTop();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const openProduct = (p: TopProduct) => {
+    void recordProductClick({
+      productId: p.id,
+      productName: p.name,
+      image: p.image,
+      unitPrice: p.unitPrice,
+      category: p.category,
+    });
+    onExplore();
+  };
 
   return (
     <div className="min-h-screen bg-[#FCFCF9] relative overflow-x-hidden">
@@ -55,18 +106,23 @@ export default function LandingPage({
           Healthcare Procurement Infrastructure
         </h1>
         <p className="text-lg md:text-xl text-[#4C5A50] max-w-2xl mx-auto mb-8 leading-relaxed">
-          We connect hospitals, clinics, laboratories, pharmacies, NGOs, and government health
-          institutions with verified manufacturers and distributors — digitizing procurement from
-          sourcing to delivery on one intelligent platform.
+          A modern enterprise procurement platform for healthcare across Africa — source verified
+          products and APIs, request quotations, access financing partners, run LockseedX, and match
+          suppliers with AI.
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
           <button
             onClick={onExplore}
             className="bg-gradient-to-b from-[#fb8536] to-[#f36b14] text-white font-semibold py-3 px-7 rounded-xl transition-all shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_10px_24px_rgba(243,107,20,0.35)] hover:shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_12px_28px_rgba(243,107,20,0.45)] active:scale-[0.98]"
           >
-            Explore the Platform
+            Explore Products
           </button>
-
+          <button
+            onClick={() => router.push('/services')}
+            className="bg-white/60 backdrop-blur border border-white/80 text-[#16231C] font-semibold py-3 px-7 rounded-xl"
+          >
+            View Services
+          </button>
           <button
             onClick={() => router.push('/become-a-supplier')}
             className="border-2 border-[#1F4D3A] text-[#1F4D3A] font-semibold py-3 px-7 rounded-xl transition-all hover:bg-[#1F4D3A] hover:text-white active:scale-[0.98]"
@@ -75,20 +131,39 @@ export default function LandingPage({
           </button>
         </div>
 
-        <p className="text-xs uppercase tracking-widest text-[#8B9689] mb-5">
-          Manufacturers and distributors on the network
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 opacity-70">
-          {manufacturers.map((m) => (
-            <span key={m} className="text-sm font-semibold text-[#4C5A50]">
-              {m}
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-[#4C5A50] max-w-3xl mx-auto mb-10">
+          {platformValueProps.slice(0, 4).map((v) => (
+            <span key={v} className="inline-flex items-center gap-1.5">
+              <CheckCircle2 size={14} className="text-[#1F4D3A] shrink-0" />
+              {v.replace(/\.$/, '')}
             </span>
+          ))}
+        </div>
+
+        <p className="text-xs uppercase tracking-widest text-[#8B9689] mb-5">Partner brands</p>
+        <div className="flex flex-wrap items-center justify-center gap-3 opacity-90">
+          {manufacturers.slice(0, 12).map((m) => (
+            <div
+              key={m.name}
+              className="h-10 px-3 rounded-lg bg-white/70 border border-white/80 flex items-center gap-2 shadow-sm"
+              title={m.name}
+            >
+              <img
+                src={brandLogoUrl(m.domain)}
+                alt=""
+                className="w-5 h-5 object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+              <span className="text-xs font-semibold text-[#4C5A50] whitespace-nowrap">{m.name}</span>
+            </div>
           ))}
         </div>
       </section>
 
       {/* Infrastructure claim strip */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className={`rounded-3xl overflow-hidden ${glassCard}`}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/40">
             <div className="bg-white/40 backdrop-blur-md p-6">
@@ -123,9 +198,126 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* Capabilities preview */}
+      {/* Top Products — dynamically ranked by clicks */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+          <div>
+            <span className="text-sm font-semibold text-[#1F4D3A]">Top products</span>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#16231C] mt-2">
+              Products you love most!
+                          </h2>
+          </div>
+          <button
+            onClick={onExplore}
+            className="shrink-0 inline-flex items-center gap-2 text-[#1F4D3A] font-semibold hover:text-[#2E6650]"
+          >
+            See more <ArrowRight size={16} />
+          </button>
+        </div>
+
+        {topLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-10 h-10 border-4 border-[#D7DCCE] border-t-[#f36b14] rounded-full animate-spin" />
+          </div>
+        ) : topProducts.length === 0 ? (
+          <div className={`rounded-2xl p-10 text-center ${glassCard}`}>
+            <Package size={36} className="mx-auto text-[#8B9689] mb-3" />
+            <p className="text-[#4C5A50]">Products will appear here as buyers explore the catalog.</p>
+            <button onClick={onExplore} className="mt-4 text-[#f36b14] font-semibold">
+              Browse products
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {topProducts.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => openProduct(p)}
+                className={`text-left rounded-2xl overflow-hidden transition-all ${glassCard} ${glassCardHover}`}
+              >
+                <div className="h-40 bg-gradient-to-br from-[#F1F3EC] to-[#E8EBE1] overflow-hidden">
+                  {p.image ? (
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : null}
+                </div>
+                <div className="p-5">
+                  <span className="text-xs font-semibold text-[#1F4D3A]">{p.category}</span>
+                  <h3 className="font-bold text-[#16231C] mt-1 line-clamp-2">{p.name}</h3>
+                  <p className="text-sm font-semibold text-[#f36b14] mt-2">
+                    {formatPrice(p.unitPrice)}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="text-center mt-8">
+          <button
+            onClick={onExplore}
+            className="bg-gradient-to-b from-[#fb8536] to-[#f36b14] text-white font-semibold py-3 px-8 rounded-xl inline-flex items-center gap-2"
+          >
+            See more products <ArrowRight size={18} />
+          </button>
+        </div>
+      </section>
+
+      {/* Services preview */}
       <section className="py-20 relative">
         <div className="absolute inset-0 bg-[#F1F3EC]/70 backdrop-blur-sm -z-10" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12">
+            <div className="max-w-2xl">
+              <span className="text-sm font-semibold text-[#1F4D3A]">Services</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
+                Digital health, financing partners, quality &amp; after-sales
+              </h2>
+              <p className="text-lg text-[#4C5A50]">
+                LockseedX inventory software, financing through trusted partners, regulatory
+                support, and biomedical after-sales — built for healthcare operations.
+              </p>
+            </div>
+            <button
+              onClick={() => router.push('/services')}
+              className="shrink-0 inline-flex items-center gap-2 text-[#1F4D3A] font-semibold"
+            >
+              All services <ArrowRight size={16} />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {servicePillars.map((p) => {
+              const Icon = p.icon;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => router.push(`/services#${p.id}`)}
+                  className={`text-left rounded-2xl p-7 transition-all ${glassCard} ${glassCardHover}`}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-white/70 flex items-center justify-center">
+                      <Icon size={18} className="text-[#f36b14]" />
+                    </div>
+                    <h3 className="font-bold text-[#16231C]">{p.title}</h3>
+                  </div>
+                  <p className="text-sm text-[#4C5A50] line-clamp-3">{p.intro}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Capabilities preview */}
+      <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-14">
             <div className="max-w-2xl">
@@ -133,10 +325,6 @@ export default function LandingPage({
               <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
                 Everything healthcare procurement needs
               </h2>
-              <p className="text-lg text-[#4C5A50]">
-                One platform for the full procurement lifecycle — an operating layer for how
-                healthcare organizations source, buy, and manage suppliers.
-              </p>
             </div>
             <button
               onClick={() => router.push('/platform')}
@@ -150,7 +338,7 @@ export default function LandingPage({
               const Icon = c.icon;
               return (
                 <div key={c.title} className={`rounded-2xl p-6 transition-all ${glassCard} ${glassCardHover}`}>
-                  <div className="w-10 h-10 rounded-lg bg-white/70 shadow-[3px_3px_8px_rgba(31,77,58,0.10),-3px_-3px_8px_rgba(255,255,255,0.9)] flex items-center justify-center mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-white/70 flex items-center justify-center mb-4">
                     <Icon size={18} className="text-[#f36b14]" />
                   </div>
                   <h3 className="text-base font-bold text-[#16231C] mb-1.5">{c.title}</h3>
@@ -163,12 +351,13 @@ export default function LandingPage({
       </section>
 
       {/* Smart Matching */}
-      <section className="py-20">
+      <section className="py-20 relative">
+        <div className="absolute inset-0 bg-[#F1F3EC]/70 backdrop-blur-sm -z-10" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
               <span className="text-sm font-semibold text-[#1F4D3A] flex items-center gap-1">
-                <Sparkles size={14} /> Smart Supplier Matching
+                <Sparkles size={14} /> AI-powered Smart Matching
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
                 Every RFQ is routed by data, not by who a buyer already knows
@@ -192,36 +381,19 @@ export default function LandingPage({
                 <div className="bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/10">
                   <p className="text-sm text-white/70 mb-3">Matching in progress</p>
                   <svg viewBox="0 0 300 150" className="w-full h-36" fill="none">
-                    {/* connecting lines */}
                     <line x1="34" y1="75" x2="262" y2="30" stroke="white" strokeOpacity="0.18" strokeWidth="2" />
                     <line x1="34" y1="75" x2="262" y2="75" stroke="white" strokeOpacity="0.18" strokeWidth="2" />
                     <line x1="34" y1="75" x2="262" y2="120" stroke="white" strokeOpacity="0.18" strokeWidth="2" />
-
-                    {/* traveling pulse along the matched line */}
                     <circle r="4" fill="#4ADE80">
                       <animateMotion dur="1.8s" repeatCount="indefinite" path="M34,75 L262,75" />
                     </circle>
-                    <circle r="4" fill="#4ADE80" opacity="0.5">
-                      <animateMotion dur="1.8s" begin="0.6s" repeatCount="indefinite" path="M34,75 L262,75" />
-                    </circle>
-
-                    {/* RFQ node */}
                     <circle cx="34" cy="75" r="18" fill="white" fillOpacity="0.12" stroke="white" strokeOpacity="0.4" strokeWidth="1.5" />
                     <text x="34" y="79" textAnchor="middle" fontSize="10" fontWeight="700" fill="white">
                       RFQ
                     </text>
-
-                    {/* supplier nodes */}
                     <circle cx="262" cy="30" r="13" fill="white" fillOpacity="0.1" stroke="white" strokeOpacity="0.3" />
                     <circle cx="262" cy="120" r="13" fill="white" fillOpacity="0.1" stroke="white" strokeOpacity="0.3" />
-
-                    <circle cx="262" cy="75" r="13" fill="#4ADE80" fillOpacity="0.9">
-                      <animate attributeName="r" values="13;15;13" dur="1.8s" repeatCount="indefinite" />
-                    </circle>
-                    <circle cx="262" cy="75" r="13" fill="none" stroke="#4ADE80" strokeWidth="2">
-                      <animate attributeName="r" values="13;24" dur="1.8s" repeatCount="indefinite" />
-                      <animate attributeName="opacity" values="0.6;0" dur="1.8s" repeatCount="indefinite" />
-                    </circle>
+                    <circle cx="262" cy="75" r="13" fill="#4ADE80" fillOpacity="0.9" />
                   </svg>
                 </div>
                 <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center justify-between">
@@ -233,6 +405,47 @@ export default function LandingPage({
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Partner brands full grid */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <span className="text-sm font-semibold text-[#1F4D3A]">Partner brands</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
+              Manufacturers &amp; suppliers on the network
+            </h2>
+            <p className="text-lg text-[#4C5A50] max-w-2xl mx-auto">
+              Discover products across major healthcare brands — more partners join regularly.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+            {manufacturers.map((m) => (
+              <div
+                key={m.name}
+                className={`rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center min-h-[88px] ${glassCard} ${glassCardHover}`}
+              >
+                <img
+                  src={brandLogoUrl(m.domain)}
+                  alt={m.name}
+                  className="w-8 h-8 object-contain"
+                  onError={(e) => {
+                    e.currentTarget.style.visibility = 'hidden';
+                  }}
+                />
+                <span className="text-xs font-bold text-[#16231C] leading-tight">{m.name}</span>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <button
+              onClick={() => router.push('/suppliers')}
+              className="inline-flex items-center gap-2 text-[#1F4D3A] font-semibold"
+            >
+              View supplier network <ArrowRight size={16} />
+            </button>
           </div>
         </div>
       </section>
@@ -335,6 +548,31 @@ export default function LandingPage({
       </section>
 
       {/* Final CTA */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1F4D3A] to-[#2E6650] -z-10" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#4ADE80]">
+            Your procurement infrastructure, built for scale
+          </h2>
+          <p className="text-lg text-white/90 mb-8">
+            Whether you buy, supply, or partner — Lockseed gives you one platform to work from.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={handleRequestDemo}
+              className="bg-white text-[#1F4D3A] hover:bg-[#F1F3EC] font-semibold py-3 px-8 rounded-xl"
+            >
+              Explore Products
+            </button>
+            <button
+              onClick={() => router.push('/services')}
+              className="bg-white/10 border border-white/30 hover:border-white/60 text-white font-semibold py-3 px-8 rounded-xl"
+            >
+              View Services
+            </button>
+          </div>
+        </div>
+      </section>
 
       <SiteFooter />
     </div>

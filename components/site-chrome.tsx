@@ -142,8 +142,13 @@ export function SiteFooter() {
                 </a>
               </li>
               <li>
+                <a href="/services" className="hover:text-white transition">
+                  Services
+                </a>
+              </li>
+              <li>
                 <a href="/marketplace" className="hover:text-white transition">
-                  Marketplace
+                  Products
                 </a>
               </li>
             </ul>

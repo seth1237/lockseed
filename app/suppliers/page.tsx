@@ -4,24 +4,32 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import ContentPageShell from '@/components/content-page-shell';
 import { glassCard, glassCardHover } from '@/components/site-chrome';
-import { manufacturers } from '@/lib/site-content';
+import { manufacturers, brandLogoUrl } from '@/lib/site-content';
 
 export default function SuppliersPage() {
   const router = useRouter();
 
   return (
     <ContentPageShell
-      eyebrow="Supplier network"
+      eyebrow="Partner brands"
       title="Trusted manufacturers on the network"
       description="Direct access to verified manufacturers and their distribution partners — more are joining regularly."
     >
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
-        {manufacturers.map((name) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-12">
+        {manufacturers.map((brand) => (
           <div
-            key={name}
-            className={`rounded-xl p-6 flex items-center justify-center text-center transition-all ${glassCard} ${glassCardHover}`}
+            key={brand.name}
+            className={`rounded-xl p-6 flex flex-col items-center justify-center text-center gap-3 transition-all min-h-[110px] ${glassCard} ${glassCardHover}`}
           >
-            <span className="font-bold text-[#16231C]">{name}</span>
+            <img
+              src={brandLogoUrl(brand.domain)}
+              alt={brand.name}
+              className="w-10 h-10 object-contain"
+              onError={(e) => {
+                e.currentTarget.style.visibility = 'hidden';
+              }}
+            />
+            <span className="font-bold text-[#16231C] text-sm">{brand.name}</span>
           </div>
         ))}
       </div>

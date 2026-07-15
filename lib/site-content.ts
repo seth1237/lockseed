@@ -18,19 +18,42 @@ import {
   FlaskConical,
   HeartHandshake,
   Factory,
+  MonitorSmartphone,
+  BadgeCheck,
+  Wrench,
+  Cpu,
 } from 'lucide-react';
 
+/** Partner brands shown on the landing page and suppliers network. */
 export const manufacturers = [
-  'Zybio',
-  'Mindray',
-  'Edan',
-  'Contec',
-  'Heal Force',
-  'Comen',
-  'Philips',
-  'GE HealthCare',
-  'Siemens Healthineers',
-  'Bionet',
+  { name: 'Zybio', domain: 'zybio.com' },
+  { name: 'Mindray', domain: 'mindray.com' },
+  { name: 'Edan', domain: 'edan.com' },
+  { name: 'Contec', domain: 'contecmed.com' },
+  { name: 'Heal Force', domain: 'healforce.com' },
+  { name: 'Comen', domain: 'comen.com' },
+  { name: 'Philips', domain: 'philips.com' },
+  { name: 'GE HealthCare', domain: 'gehealthcare.com' },
+  { name: 'Siemens Healthineers', domain: 'siemens-healthineers.com' },
+  { name: 'Bionet', domain: 'bionet.com' },
+  { name: 'Roche', domain: 'roche.com' },
+  { name: 'Abbott', domain: 'abbott.com' },
+  { name: 'BD', domain: 'bd.com' },
+  { name: 'Sysmex', domain: 'sysmex.com' },
+  { name: 'Dräger', domain: 'draeger.com' },
+  { name: 'Olympus', domain: 'olympus-global.com' },
+  { name: 'Medtronic', domain: 'medtronic.com' },
+  { name: 'Fujifilm', domain: 'fujifilm.com' },
+  { name: 'Canon Medical', domain: 'global.medical.canon' },
+  { name: 'Samsung Medison', domain: 'samsunghealthcare.com' },
+  { name: 'Nihon Kohden', domain: 'nihonkohden.com' },
+  { name: 'Beckman Coulter', domain: 'beckmancoulter.com' },
+  { name: 'Thermo Fisher', domain: 'thermofisher.com' },
+  { name: 'Wondfo', domain: 'wondfo.com' },
+  { name: 'Snibe', domain: 'snibe.com' },
+  { name: 'SonoScape', domain: 'sonoscape.com' },
+  { name: 'Biolight', domain: 'biolight.com.cn' },
+  { name: 'Yuwell', domain: 'yuwell.com' },
 ];
 
 export const segments = [
@@ -59,8 +82,13 @@ export const capabilities = [
   },
   {
     title: 'Smart Supplier Matching',
-    desc: 'Requests are routed to the right suppliers by category, certification, and history.',
+    desc: 'AI-powered matching routes requests by certification, price history, and delivery reliability.',
     icon: Sparkles,
+  },
+  {
+    title: 'LockseedX Inventory',
+    desc: 'Healthcare inventory management software for hospitals, clinics, pharmacies and laboratories.',
+    icon: MonitorSmartphone,
   },
   {
     title: 'Procurement Workflow Automation',
@@ -68,13 +96,8 @@ export const capabilities = [
     icon: Workflow,
   },
   {
-    title: 'Inventory Management',
-    desc: 'Visibility into stock and reorder needs across locations.',
-    icon: Boxes,
-  },
-  {
-    title: 'Supply Chain Financing',
-    desc: 'Financing options structured around procurement cycles.',
+    title: 'Healthcare Financing Access',
+    desc: 'Access equipment, PO, supplier, and invoice financing through trusted financial partners.',
     icon: Landmark,
   },
   {
@@ -89,7 +112,7 @@ export const capabilities = [
   },
   {
     title: 'Manufacturer & Distributor Network',
-    desc: 'Direct access to verified manufacturers and their distribution partners.',
+    desc: 'Direct access to verified manufacturers, APIs, and contract manufacturing partners.',
     icon: Building2,
   },
   {
@@ -112,15 +135,83 @@ export const capabilities = [
     desc: 'A clear, auditable record of what was procured, from whom, and at what cost.',
     icon: Eye,
   },
+  {
+    title: 'Inventory Management',
+    desc: 'Visibility into stock and reorder needs across locations with LockseedX.',
+    icon: Boxes,
+  },
+];
+
+/** Service pillars for Africa's Healthcare Procurement Infrastructure. */
+export const servicePillars = [
+  {
+    id: 'digital-health',
+    title: 'Digital Health & Healthcare IT',
+    icon: Cpu,
+    intro:
+      'Software and digital tools that help facilities run procurement and inventory with enterprise clarity.',
+    items: [
+      {
+        name: 'LockseedX',
+        desc: 'Healthcare Inventory Management Software for hospitals, clinics, pharmacies and laboratories.',
+      },
+    ],
+  },
+  {
+    id: 'financing',
+    title: 'Healthcare Financing',
+    icon: Landmark,
+    intro:
+      'Lockseed Supply works with trusted financial partners to help healthcare providers access equipment financing, purchase order financing, supplier financing, invoice financing and equipment leasing solutions.',
+    items: [
+      { name: 'Equipment financing', desc: 'Via trusted financial partners' },
+      { name: 'Purchase order financing', desc: 'Via trusted financial partners' },
+      { name: 'Supplier financing', desc: 'Via trusted financial partners' },
+      { name: 'Invoice financing', desc: 'Via trusted financial partners' },
+      { name: 'Equipment leasing', desc: 'Via trusted financial partners' },
+    ],
+  },
+  {
+    id: 'regulatory',
+    title: 'Regulatory & Quality Services',
+    icon: BadgeCheck,
+    intro: 'Compliance support that keeps suppliers and products audit-ready across markets.',
+    items: [
+      { name: 'GMP Verification', desc: '' },
+      { name: 'FDA Documentation', desc: '' },
+      { name: 'CE Documentation', desc: '' },
+      { name: 'Product Registration Support', desc: '' },
+      { name: 'Quality Audits', desc: '' },
+      { name: 'Supplier Compliance Verification', desc: '' },
+    ],
+  },
+  {
+    id: 'after-sales',
+    title: 'After-Sales Services',
+    icon: Wrench,
+    intro: 'Keep equipment performing after delivery — from install to spare parts.',
+    items: [
+      { name: 'Equipment Installation', desc: '' },
+      { name: 'Preventive Maintenance', desc: '' },
+      { name: 'Equipment Calibration', desc: '' },
+      { name: 'Biomedical Engineering Services', desc: '' },
+      { name: 'User Training', desc: '' },
+      { name: 'Warranty Management', desc: '' },
+      { name: 'Spare Parts Supply', desc: '' },
+    ],
+  },
+];
+
+export const platformValueProps = [
 ];
 
 export const workflowSteps = [
   'Discover verified suppliers and manufacturers.',
   'Compare products, certifications, and quotations.',
   'Send RFQs to multiple suppliers at once.',
-  'Manage approvals and procurement digitally.',
+  'Manage approvals and procurement digitally with LockseedX.',
+  'Access financing options through trusted financial partners.',
   'Track logistics and fulfilment end to end.',
-  'Monitor procurement analytics and spend.',
   'Build long-term, direct supplier relationships.',
 ];
 
@@ -170,3 +261,7 @@ export const supplierDocChecklist = [
   { id: 'distribution', label: 'Distribution or manufacturer authorization letters' },
   { id: 'insurance', label: 'Liability / product insurance (if applicable)' },
 ];
+
+export function brandLogoUrl(domain: string) {
+  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
+}
