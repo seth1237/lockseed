@@ -548,15 +548,9 @@ export default function LandingPage({
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 relative overflow-hidden">
+      {/* <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1F4D3A] to-[#2E6650] -z-10" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-[#4ADE80]">
-            Your procurement infrastructure, built for scale
-          </h2>
-          <p className="text-lg text-white/90 mb-8">
-            Whether you buy, supply, or partner — Lockseed gives you one platform to work from.
-          </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={handleRequestDemo}
@@ -572,7 +566,7 @@ export default function LandingPage({
             </button>
           </div>
         </div>
-      </section>
+      </section> */}
 
       <SiteFooter />
     </div>
