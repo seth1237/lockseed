@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Menu, X, ShieldCheck } from 'lucide-react';
+import { Menu, X, ShieldCheck, Mail, MessageCircle } from 'lucide-react';
 
 export function SiteNav({
   onExplore,
@@ -106,11 +106,19 @@ export function SiteNav({
   );
 }
 
+// Contact details shown in the footer. Update here if numbers or the inbox change.
+const CONTACT_EMAIL = 'info@lockseedsupply.com';
+const WHATSAPP_NUMBERS = ['+254713064188', '+254735933909'];
+
+function toWhatsAppHref(number: string) {
+  return `https://wa.me/${number.replace(/[^\d]/g, '')}`;
+}
+
 export function SiteFooter() {
   return (
     <footer className="bg-[#16231C] text-white/70 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <ShieldCheck size={22} color="#FCFCF9" />
@@ -188,6 +196,35 @@ export function SiteFooter() {
               </li>
             </ul>
           </div>
+
+          <div className="col-span-2 md:col-span-1">
+            <h4 className="font-semibold text-white mb-4 text-sm">Contact</h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="flex items-center gap-2 hover:text-white transition"
+                >
+                  <Mail size={15} className="shrink-0 text-white/50" />
+                  <span className="break-all">{CONTACT_EMAIL}</span>
+                </a>
+              </li>
+              {WHATSAPP_NUMBERS.map((number) => (
+                <li key={number}>
+                  <a
+                    href={toWhatsAppHref(number)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 hover:text-white transition"
+                  >
+                    <MessageCircle size={15} className="shrink-0 text-[#25D366]" />
+                    <span>{number}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           <div>
             <h4 className="font-semibold text-white mb-4 text-sm">Legal</h4>
             <ul className="space-y-2 text-sm">

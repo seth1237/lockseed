@@ -13,7 +13,7 @@ export default function PlatformPage() {
     <ContentPageShell
       eyebrow="Platform"
       title="Africa’s Healthcare Procurement Infrastructure"
-      description="One enterprise platform to source verified products, request quotations, access financing partners, run LockseedX inventory, and match suppliers with AI."
+      description="One enterprise platform to source verified products, request quotations, access financing partners, and run LockseedX inventory."
     >
       <div className={`max-w-4xl mx-auto rounded-2xl p-8 mb-14 ${glassCard}`}>
         <h2 className="text-lg font-bold text-[#16231C] mb-4">Built for healthcare across Africa</h2>

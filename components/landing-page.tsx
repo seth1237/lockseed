@@ -7,7 +7,6 @@ import {
   Zap,
   Globe,
   ArrowRight,
-  Sparkles,
   Quote,
   PackageCheck,
   FileCheck,
@@ -32,21 +31,11 @@ import {
 import { fetchProducts } from '@/lib/erp-api';
 import { formatPrice } from '@/lib/erp/products';
 
-export default function LandingPage({
-  onExplore,
-  onRequestQuote,
-}: {
-  onExplore: () => void;
-  onRequestQuote?: () => void;
-}) {
+export default function LandingPage({ onExplore }: { onExplore: () => void }) {
   const router = useRouter();
   const [activeStory, setActiveStory] = useState(0);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [topLoading, setTopLoading] = useState(true);
-  const handleRequestDemo = onRequestQuote ?? (() => router.push('/marketplace'));
-
-  const glassDark =
-    'bg-white/10 backdrop-blur-xl border border-white/15 shadow-[6px_6px_20px_rgba(0,0,0,0.22),-4px_-4px_14px_rgba(255,255,255,0.05)_inset]';
 
   useEffect(() => {
     let active = true;
@@ -106,9 +95,7 @@ export default function LandingPage({
           Healthcare Procurement Infrastructure
         </h1>
         <p className="text-lg md:text-xl text-[#4C5A50] max-w-2xl mx-auto mb-8 leading-relaxed">
-          A modern enterprise procurement platform for healthcare across Africa — source verified
-          products and APIs, request quotations, access financing partners, run LockseedX, and match
-          suppliers with AI.
+          We connect hospitals, clinics, laboratories, pharmacies, NGOs, and government health institutions with verified manufacturers and distributors—digitizing healthcare procurement from sourcing to delivery on one intelligent platform.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
           <button
@@ -350,65 +337,6 @@ export default function LandingPage({
         </div>
       </section>
 
-      {/* Smart Matching */}
-      <section className="py-20 relative">
-        <div className="absolute inset-0 bg-[#F1F3EC]/70 backdrop-blur-sm -z-10" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="text-sm font-semibold text-[#1F4D3A] flex items-center gap-1">
-                <Sparkles size={14} /> AI-powered Smart Matching
-              </span>
-              <h2 className="text-3xl md:text-4xl font-bold text-[#16231C] mt-3 mb-4">
-                Every RFQ is routed by data, not by who a buyer already knows
-              </h2>
-              <p className="text-lg text-[#4C5A50] mb-6">
-                Smart Matching surfaces the right suppliers for every request automatically —
-                ranked by certification, price history, and delivery reliability.
-              </p>
-              <button
-                onClick={() => router.push('/how-it-works')}
-                className="inline-flex items-center gap-1 text-[#1F4D3A] font-semibold hover:text-[#2E6650]"
-              >
-                See how the platform works <ArrowRight size={16} />
-              </button>
-            </div>
-            <div
-              className={`relative rounded-3xl p-10 text-white bg-gradient-to-br from-[#1F4D3A] to-[#2E6650] overflow-hidden ${glassDark}`}
-            >
-              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-[#f36b14]/20 blur-3xl" />
-              <div className="space-y-4 relative">
-                <div className="bg-white/10 backdrop-blur-md rounded-xl p-5 border border-white/10">
-                  <p className="text-sm text-white/70 mb-3">Matching in progress</p>
-                  <svg viewBox="0 0 300 150" className="w-full h-36" fill="none">
-                    <line x1="34" y1="75" x2="262" y2="30" stroke="white" strokeOpacity="0.18" strokeWidth="2" />
-                    <line x1="34" y1="75" x2="262" y2="75" stroke="white" strokeOpacity="0.18" strokeWidth="2" />
-                    <line x1="34" y1="75" x2="262" y2="120" stroke="white" strokeOpacity="0.18" strokeWidth="2" />
-                    <circle r="4" fill="#4ADE80">
-                      <animateMotion dur="1.8s" repeatCount="indefinite" path="M34,75 L262,75" />
-                    </circle>
-                    <circle cx="34" cy="75" r="18" fill="white" fillOpacity="0.12" stroke="white" strokeOpacity="0.4" strokeWidth="1.5" />
-                    <text x="34" y="79" textAnchor="middle" fontSize="10" fontWeight="700" fill="white">
-                      RFQ
-                    </text>
-                    <circle cx="262" cy="30" r="13" fill="white" fillOpacity="0.1" stroke="white" strokeOpacity="0.3" />
-                    <circle cx="262" cy="120" r="13" fill="white" fillOpacity="0.1" stroke="white" strokeOpacity="0.3" />
-                    <circle cx="262" cy="75" r="13" fill="#4ADE80" fillOpacity="0.9" />
-                  </svg>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-white/70 mb-1">Best match found</p>
-                    <p className="text-xl font-bold">Supplier verified &amp; ranked #1</p>
-                  </div>
-                  <span className="w-3 h-3 rounded-full bg-[#4ADE80] animate-pulse shrink-0" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Partner brands full grid */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -546,27 +474,6 @@ export default function LandingPage({
           </div>
         </div>
       </section>
-
-      {/* Final CTA */}
-      {/* <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1F4D3A] to-[#2E6650] -z-10" />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={handleRequestDemo}
-              className="bg-white text-[#1F4D3A] hover:bg-[#F1F3EC] font-semibold py-3 px-8 rounded-xl"
-            >
-              Explore Products
-            </button>
-            <button
-              onClick={() => router.push('/services')}
-              className="bg-white/10 border border-white/30 hover:border-white/60 text-white font-semibold py-3 px-8 rounded-xl"
-            >
-              View Services
-            </button>
-          </div>
-        </div>
-      </section> */}
 
       <SiteFooter />
     </div>

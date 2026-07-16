@@ -10,9 +10,5 @@ export default function Page() {
     router.push('/marketplace');
   };
 
-  const handleRequestQuote = () => {
-    router.push('/marketplace');
-  };
-
-  return <LandingPage onExplore={handleExplore} onRequestQuote={handleRequestQuote} />;
+  return <LandingPage onExplore={handleExplore} />;
 }

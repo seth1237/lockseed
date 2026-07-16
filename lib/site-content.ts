@@ -1,7 +1,6 @@
 import {
   ShieldCheck,
   FileText,
-  Sparkles,
   Workflow,
   Boxes,
   Landmark,
@@ -79,11 +78,6 @@ export const capabilities = [
     title: 'RFQ Management',
     desc: 'Send, track, and compare requests for quotation from one workspace.',
     icon: FileText,
-  },
-  {
-    title: 'Smart Supplier Matching',
-    desc: 'AI-powered matching routes requests by certification, price history, and delivery reliability.',
-    icon: Sparkles,
   },
   {
     title: 'LockseedX Inventory',
@@ -203,6 +197,12 @@ export const servicePillars = [
 ];
 
 export const platformValueProps = [
+  'Source healthcare products from verified suppliers.',
+  'Source APIs and contract manufacturing partners.',
+  'Request quotations across every major healthcare category.',
+  'Access healthcare financing through our financial partners.',
+  'Manage procurement digitally with LockseedX.',
+  'Discover products across every major healthcare category.',
 ];
 
 export const workflowSteps = [
