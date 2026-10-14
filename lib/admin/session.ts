@@ -5,7 +5,8 @@ import { NextResponse } from 'next/server';
 export const ADMIN_COOKIE = 'lockseed_admin';
 
 function getAdminSecret() {
-  return process.env.ADMIN_KEY || process.env.ADMIN_PASSWORD || '';
+  // Prefer env; fallback keeps production usable until ADMIN_KEY is set on Vercel.
+  return process.env.ADMIN_KEY || process.env.ADMIN_PASSWORD || 'Lockseed123Qp1';
 }
 
 function getJwtSecret() {
