@@ -16,9 +16,12 @@ const app = express();
 app.set('trust proxy', 1);
 
 const allowedOrigins = [
+  'http://localhost:3000',
   'http://localhost:3001',
   'https://lockseed.vercel.app',
   'https://lockseed.codewithseth.co.ke',
+  'https://lockseedsupply.com',
+  'https://www.lockseedsupply.com',
 ];
 
 // Allow any extra origin configured via CLIENT_URL (comma-separated supported).
@@ -36,12 +39,15 @@ app.use(
     origin(origin, callback) {
       // Allow non-browser clients (curl, server-to-server) with no Origin header.
       if (!origin || allowedOrigins.includes(origin.replace(/\/+$/, ''))) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
+        return callback(null, true);
       }
+      // Reject without throwing — throwing becomes a 500 via the error handler.
+      console.warn(`[cors] blocked origin: ${origin}`);
+      return callback(null, false);
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 app.use(express.json());

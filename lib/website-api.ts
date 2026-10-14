@@ -149,6 +149,44 @@ export async function submitSupplierApplication(body: {
   });
 }
 
+export type SupplierLead = {
+  id: string;
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  country: string;
+  city: string;
+  website: string;
+  supplierType: string;
+  categories: string[];
+  products: { name: string; category?: string; description?: string }[];
+  documentsReady: string[];
+  message: string;
+  status: 'new' | 'reviewing' | 'accepted' | 'rejected';
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function fetchSupplierLeads(adminKey: string, status?: string) {
+  const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+  return api<{ leads: SupplierLead[] }>(`/api/suppliers/leads${qs}`, {
+    headers: { 'x-admin-key': adminKey },
+  });
+}
+
+export async function updateSupplierLeadStatus(
+  adminKey: string,
+  id: string,
+  status: SupplierLead['status']
+) {
+  return api<{ lead: SupplierLead }>(`/api/suppliers/leads/${id}`, {
+    method: 'PATCH',
+    headers: { 'x-admin-key': adminKey },
+    body: JSON.stringify({ status }),
+  });
+}
+
 export type TopProduct = {
   id: string;
   name: string;

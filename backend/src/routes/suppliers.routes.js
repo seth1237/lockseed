@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { asyncHandler } from '../middlewares/error.middleware.js';
+import { requireAdminKey } from '../middlewares/auth.middleware.js';
 import { SupplierLead } from '../models/SupplierLead.js';
 import { sendSupplierLeadEmail } from '../services/email.service.js';
 
@@ -29,6 +30,27 @@ const applySchema = z.object({
   message: z.string().optional(),
 });
 
+function serializeLead(lead) {
+  return {
+    id: lead._id.toString(),
+    companyName: lead.companyName,
+    contactName: lead.contactName,
+    email: lead.email,
+    phone: lead.phone,
+    country: lead.country || '',
+    city: lead.city || '',
+    website: lead.website || '',
+    supplierType: lead.supplierType,
+    categories: lead.categories || [],
+    products: lead.products || [],
+    documentsReady: lead.documentsReady || [],
+    message: lead.message || '',
+    status: lead.status,
+    createdAt: lead.createdAt,
+    updatedAt: lead.updatedAt,
+  };
+}
+
 router.post(
   '/apply',
   asyncHandler(async (req, res) => {
@@ -49,6 +71,44 @@ router.post(
       id: lead._id.toString(),
       message: 'Application received. Our team will review it shortly.',
     });
+  })
+);
+
+router.get(
+  '/leads',
+  requireAdminKey,
+  asyncHandler(async (req, res) => {
+    const status = typeof req.query.status === 'string' ? req.query.status : '';
+    const filter =
+      status && ['new', 'reviewing', 'accepted', 'rejected'].includes(status)
+        ? { status }
+        : {};
+
+    const leads = await SupplierLead.find(filter).sort({ createdAt: -1 }).lean();
+    res.json({ leads: leads.map(serializeLead) });
+  })
+);
+
+router.patch(
+  '/leads/:id',
+  requireAdminKey,
+  asyncHandler(async (req, res) => {
+    const statusSchema = z.object({
+      status: z.enum(['new', 'reviewing', 'accepted', 'rejected']),
+    });
+    const { status } = statusSchema.parse(req.body);
+
+    const lead = await SupplierLead.findByIdAndUpdate(
+      req.params.id,
+      { $set: { status } },
+      { new: true }
+    );
+
+    if (!lead) {
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+
+    res.json({ lead: serializeLead(lead) });
   })
 );
 

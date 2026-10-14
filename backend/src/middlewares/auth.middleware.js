@@ -22,4 +22,25 @@ export function attachUserIfPresent(req, res, next) {
     .catch(next);
 }
 
+/** Protects admin-only routes with ADMIN_KEY (header x-admin-key or ?key=). */
+export function requireAdminKey(req, res, next) {
+  const configured = process.env.ADMIN_KEY;
+  if (!configured) {
+    return res.status(503).json({
+      error: 'Admin access is not configured. Set ADMIN_KEY on the backend.',
+    });
+  }
+
+  const provided =
+    req.headers['x-admin-key'] ||
+    (typeof req.query.key === 'string' ? req.query.key : '') ||
+    '';
+
+  if (provided !== configured) {
+    return res.status(401).json({ error: 'Invalid admin key' });
+  }
+
+  next();
+}
+
 export { sanitizeUser };
