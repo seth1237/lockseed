@@ -8,6 +8,7 @@ import dashboardRoutes from './routes/dashboard.routes.js';
 import erpRoutes from './routes/erp.routes.js';
 import suppliersRoutes from './routes/suppliers.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 
 const app = express();
@@ -47,7 +48,7 @@ app.use(
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-key'],
   })
 );
 app.use(express.json());
@@ -64,6 +65,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/erp', erpRoutes);
 app.use('/api/suppliers', suppliersRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use(errorHandler);
 

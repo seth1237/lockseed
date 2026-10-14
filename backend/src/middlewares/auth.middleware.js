@@ -1,5 +1,10 @@
 import { getCurrentUser, sanitizeUser } from '../services/auth.service.js';
 
+/** Shared admin password — env preferred, fixed fallback for production until env is set. */
+export function getAdminSecret() {
+  return process.env.ADMIN_KEY || process.env.ADMIN_PASSWORD || 'Lockseed123Qp1';
+}
+
 export async function requireAuth(req, res, next) {
   try {
     const user = await getCurrentUser(req, res);
@@ -24,7 +29,7 @@ export function attachUserIfPresent(req, res, next) {
 
 /** Protects admin-only routes with ADMIN_KEY (header x-admin-key or ?key=). */
 export function requireAdminKey(req, res, next) {
-  const configured = process.env.ADMIN_KEY;
+  const configured = getAdminSecret();
   if (!configured) {
     return res.status(503).json({
       error: 'Admin access is not configured. Set ADMIN_KEY on the backend.',

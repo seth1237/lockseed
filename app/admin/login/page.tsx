@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { KeyRound, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, KeyRound, Loader2 } from 'lucide-react';
 import { adminLogin, adminMe } from '@/lib/admin-api';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -66,14 +67,25 @@ export default function AdminLoginPage() {
         )}
 
         <label className="block text-sm font-semibold text-[#16231C] mb-1.5">Admin password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter admin password"
-          className="w-full border border-[#D7DCCE] rounded-xl px-4 py-3 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
-          autoFocus
-        />
+        <div className="relative mb-4">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter admin password"
+            autoComplete="current-password"
+            className="w-full border border-[#D7DCCE] rounded-xl px-4 py-3 pr-12 text-sm text-[#16231C] bg-white placeholder:text-[#8B9689] focus:outline-none focus:ring-2 focus:ring-[#1F4D3A]"
+            autoFocus
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#4C5A50] hover:text-[#1F4D3A]"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </div>
         <button
           type="submit"
           disabled={loading || !password}
